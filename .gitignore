@@ -13,9 +13,10 @@ target/
 .springBeans
 .sts4-cache
 
-### Maven ###
+### Maven and others ###
 
 .mvn
+.DS_Store
 mvnw.cmd
 
 ### IntelliJ IDEA ###
