@@ -1,21 +1,20 @@
 package com.example.cinemawebapp.service;
 
+import com.example.cinemawebapp.config.KinopoiskConfig;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-@ConfigurationProperties(prefix = "kinopoisk")
 @Component
-@Data
+@AllArgsConstructor
 public class KinopoiskScraperHtmlunit {
-    private String url;
+    private KinopoiskConfig kinopoiskConfig;
 
     public void ParseHtml() throws IOException {
         WebClient webClient = new WebClient();
@@ -29,10 +28,9 @@ public class KinopoiskScraperHtmlunit {
         CookieManager cookieManager;
         cookieManager = webClient.getCookieManager();
         cookieManager.setCookiesEnabled(true);
-        HtmlPage htmlPage = webClient.getPage(url);
+        HtmlPage htmlPage = webClient.getPage(kinopoiskConfig.getUrl());
         webClient.waitForBackgroundJavaScriptStartingBefore(5000);
         String htmlPageAsText = htmlPage.asXml();
-//        HtmlElement element = htmlPage.getFirstByXPath("");
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(
                 "./src/main/resources/templates/kinopoisk.html")
