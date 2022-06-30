@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "film-website")
 @Data
-public class KinopoiskConfig{
+public class FilmWebsiteConfig {
     private String urlHome;
     private String urlTop;
 }

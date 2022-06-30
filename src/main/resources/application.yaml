@@ -1,3 +1,6 @@
 film-website:
   urlHome: https://www.kinopoisk.ru
   urlTop: http://www.world-art.ru/cinema/rating_top.php?limit_1=1&&limit_2=50
+
+web-client-prop:
+  userAgent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/604.1.15
