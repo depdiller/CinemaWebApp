@@ -1,2 +1,3 @@
-kinopoisk:
-  url: https://www.kinopoisk.ru/lists/movies/top500/
+film-website:
+  urlHome: https://www.kinopoisk.ru
+  urlTop: http://www.world-art.ru/cinema/rating_top.php?limit_1=1&&limit_2=50

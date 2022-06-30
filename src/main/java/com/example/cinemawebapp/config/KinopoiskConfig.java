@@ -5,8 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "kinopoisk")
+@ConfigurationProperties(prefix = "film-website")
 @Data
 public class KinopoiskConfig{
-    private String url;
+    private String urlHome;
+    private String urlTop;
 }
