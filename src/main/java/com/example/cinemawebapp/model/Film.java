@@ -7,6 +7,7 @@ import java.util.List;
 public class Film {
     private String name;
     private String alternativeName;
+    private String posterLink;
     private List<String> countries;
     private Date worldPremier;
     private Integer duration;
