@@ -15,6 +15,7 @@ target/
 
 ### Maven and others ###
 
+AutomaticInsertionToDatabase
 .mvn
 .DS_Store
 mvnw.cmd
