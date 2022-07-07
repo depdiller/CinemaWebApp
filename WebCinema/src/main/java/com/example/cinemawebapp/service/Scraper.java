@@ -12,7 +12,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @AllArgsConstructor
@@ -38,9 +37,5 @@ public class Scraper {
 
         writer.write(htmlPageAsText);
         writer.close();
-    }
-
-    public CompletableFuture<Void> AsyncParseFilmPage(HtmlPage filmPage) {
-        return null;
     }
 }
