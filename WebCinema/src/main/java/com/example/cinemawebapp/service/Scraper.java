@@ -24,10 +24,11 @@ public class Scraper {
         HtmlPage htmlPage = webClient
                 .getPage(filmWebsiteConfig.getUrlTop());
         List<HtmlAnchor> cinemaRefsAnchors = htmlPage.getByXPath("//a[contains(@href, 'cinema.php')]");
-        for (HtmlAnchor anchor : cinemaRefsAnchors){
-            String linkToFilmPage = anchor.getAttribute("href");
-            HtmlPage page = anchor.click();
-        }
+//        for (HtmlAnchor anchor : cinemaRefsAnchors){
+//            String linkToFilmPage = anchor.getAttribute("href");
+//            HtmlPage page = anchor.click();
+//            System.out.println(page.asXml());
+//        }
 
         String htmlPageAsText = htmlPage.asXml();
 
