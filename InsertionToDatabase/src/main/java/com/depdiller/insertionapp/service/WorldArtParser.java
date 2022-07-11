@@ -7,7 +7,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlFont;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
 
-import java.util.HashSet;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,17 +15,18 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class WorldArtParser implements Parser {
-    private static final Set<String> russianTags = new HashSet<>() {{
-        add("Названия");
-        add("Производство");
-        add("Хронометраж");
-        add("Жанр");
-        add("Первый показ");
-        add("Мировые сборы");
-    }};
+    private static final Set<String> russianTags = Set.of("Русское название", "Постер", "Названия",
+            "Производство", "Хронометраж", "Жанр", "Первый показ", "Мировые сборы");
+
+    private static final String filmTitleXpath = "/html/body/center/table[7]/tbody/tr/td/table/"
+            + "tbody/tr/td[5]/table[2]/tbody/tr/td[4]/font";
+    private static final String posterXpath = "/html/body/center/table[7]/tbody/tr/td/"
+             + "table/tbody/tr/td[5]/table[2]/tbody/tr/td[1]/div/table/tbody/tr/td/a";
+    private static final String filmAttributesTable = "/html/body/center/table[7]/tbody/tr/td/table/"
+            + "tbody/tr/td[5]/table[2]/tbody/tr/td[4]/table";
 
     @Override
-    public Film filmParse(HtmlPage filmPage) {
+    public Film filmParse(HtmlPage filmPage) throws IllegalArgumentException {
         String title = filmPage.getTitleText();
         String regexPattern = "^(.*(съемочная группа|актёрский состав)).*";
 
@@ -33,18 +34,14 @@ public class WorldArtParser implements Parser {
             throw new IllegalArgumentException("Method takes only film pages");
         }
 
-        HtmlFont titleElement = filmPage.getFirstByXPath("/html/body/center/table[7]/tbody/tr/td/table/"
-                + "tbody/tr/td[5]/table[2]/tbody/tr/td[4]/font");
+        HtmlFont titleElement = filmPage.getFirstByXPath(filmTitleXpath);
         String filmTitle = titleElement.asNormalizedText();
 
-        HtmlAnchor posterUrlElement = filmPage.getFirstByXPath("/html/body/center/table[7]/tbody/tr/td/"
-                + "table/tbody/tr/td[5]/table[2]/tbody/tr/td[1]/div/table/tbody/tr/td/a");
+        HtmlAnchor posterUrlElement = filmPage.getFirstByXPath(posterXpath);
         String posterUrl = posterUrlElement.getHrefAttribute();
 
-        List<HtmlTable> tables = filmPage.getByXPath("/html/body/center/table[7]/tbody/tr/td/table/"
-                + "tbody/tr/td[5]/table[2]/tbody/tr/td[4]/table");
-
-        Map<String, String> content = tables.stream()
+        List<HtmlTable> tables = filmPage.getByXPath(filmAttributesTable);
+        Map<String, String> filmAttributes = tables.stream()
                 .map(HtmlTable::asNormalizedText)
                 .filter(Predicate.not(String::isEmpty))
                 .map(str -> str.split("\t", 2))
@@ -54,10 +51,18 @@ public class WorldArtParser implements Parser {
                 })
                 .filter(array -> russianTags.contains(array[0]))
                 .collect(Collectors.toMap(array -> array[0], array -> array[1]));
-        content.put("Русское название", filmTitle);
-        content.put("Постер", posterUrl);
-    }
 
+        filmAttributes.put("Русское название", filmTitle);
+        filmAttributes.put("Постер", posterUrl);
+
+        Film film = null;
+        try {
+            film = WorldArtObjectProducer.filmMap(filmAttributes);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return film;
+    }
 
     @Override
     public Person personParse(HtmlPage page) {
