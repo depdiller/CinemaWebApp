@@ -21,7 +21,7 @@ public class WorldArtParser implements Parser {
     private static final String filmTitleXpath = "/html/body/center/table[7]/tbody/tr/td/table/"
             + "tbody/tr/td[5]/table[2]/tbody/tr/td[4]/font";
     private static final String posterXpath = "/html/body/center/table[7]/tbody/tr/td/"
-             + "table/tbody/tr/td[5]/table[2]/tbody/tr/td[1]/div/table/tbody/tr/td/a";
+            + "table/tbody/tr/td[5]/table[2]/tbody/tr/td[1]/div/table/tbody/tr/td/a";
     private static final String filmAttributesTable = "/html/body/center/table[7]/tbody/tr/td/table/"
             + "tbody/tr/td[5]/table[2]/tbody/tr/td[4]/table";
 
