@@ -3,6 +3,7 @@ package com.depdiller.insertionapp.service;
 import com.depdiller.insertionapp.model.Film;
 import com.depdiller.insertionapp.model.Person;
 import com.depdiller.insertionapp.model.TvShow;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class WorldArtObjectProducer {
     private static final String durationPattern = "(^[0-9]+)";
@@ -45,16 +47,21 @@ public class WorldArtObjectProducer {
         }
     }
 
-    public static Film filmMap(Map<String, String> filmData) throws ParseException {
+    public static Film filmMap(@NonNull Map<String, String> filmData) throws ParseException {
         String name = filmData.get(WebsiteFilmTagNames.name.russianTag);
         String poster = filmData.get(WebsiteFilmTagNames.poster.russianTag);
 
-        List<String> countries = List.of(filmData.get(WebsiteFilmTagNames.countries.russianTag).split("(\\s+|,\\s+)"));
-        List<String> genres = List.of(filmData.get(WebsiteFilmTagNames.genres.russianTag).split("(\\s+|,\\s+)"));
+        List<String> countries = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.countries.russianTag))
+                .map(str -> List.of(str.split("(\\s+|,\\s+)")))
+                .orElse(null);
+
+        List<String> genres = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.genres.russianTag))
+                .map(str -> List.of(str.split("(\\s+|,\\s+)")))
+                .orElse(null);
 
         String alternativeName = RegexPatternMatcher
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.alternativeName.russianTag), alternativeNamePattern)
-                .orElse("");
+                .orElse(null);
 
         LocalDate date = RegexPatternMatcher
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.worldPremier.russianTag), worldPremierPattern)
@@ -68,9 +75,9 @@ public class WorldArtObjectProducer {
 
         BigDecimal money = RegexPatternMatcher
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.moneyEarnedWorldWide.russianTag), moneyEarnedWorldWidePattern)
-                .map(t -> {
+                .map(str -> {
                     try {
-                        return (BigDecimal) FORMAT_THREAD_LOCAL.get().parse(t);
+                        return (BigDecimal) FORMAT_THREAD_LOCAL.get().parse(str);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }

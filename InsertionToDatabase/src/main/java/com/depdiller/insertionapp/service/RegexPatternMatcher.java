@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 public class RegexPatternMatcher {
 
     public static Optional<String> parseUsingPattern(String stringToParse, String regex) {
-        if (stringToParse != null) {
+        if (stringToParse != null && regex != null) {
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(stringToParse);
             if (matcher.find())
