@@ -1,13 +1,32 @@
 package com.depdiller.insertionapp.model;
 
-public enum Gender {
-    male("male"), female("female");
-    private final String asString;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-    Gender(String asString) {
-        this.asString = asString;
+public enum Gender {
+    male("мужской"), female("женский");
+    private final String inRussian;
+    private static Map<String, Gender> enumMap;
+
+    Gender(String inRussian) {
+        this.inRussian = inRussian;
     }
-    public String getAsString() {
-        return asString;
+
+    public String getGenderInRussian() {
+        return inRussian;
+    }
+
+    static {
+        enumMap = new ConcurrentHashMap<>();
+        for (var instance : Gender.values()) {
+            enumMap.put(instance.getGenderInRussian(), instance);
+        }
+        enumMap = Collections.unmodifiableMap(enumMap);
+    }
+
+    public static Gender getGender(String genderInString) {
+        return enumMap.get(genderInString);
     }
 }

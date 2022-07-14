@@ -1,13 +1,10 @@
 package com.depdiller.insertionapp.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Builder
