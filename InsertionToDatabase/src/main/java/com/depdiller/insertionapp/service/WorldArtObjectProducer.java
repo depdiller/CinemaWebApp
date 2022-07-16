@@ -57,7 +57,7 @@ public class WorldArtObjectProducer {
         }
     }
 
-    public static Film filmMap(@NonNull Map<String, String> filmData) throws ParseException {
+    public static Film filmMap(@NonNull Map<String, String> filmData) {
         String name = filmData.get(WebsiteFilmTagNames.name.russianTag);
         String poster = filmData.get(WebsiteFilmTagNames.poster.russianTag);
 

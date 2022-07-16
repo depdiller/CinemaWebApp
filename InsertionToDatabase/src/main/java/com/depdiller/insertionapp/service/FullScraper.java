@@ -9,7 +9,7 @@ import java.util.List;
 
 public class FullScraper {
     private static final String topFilmsUrl = "http://www.world-art.ru/cinema/rating_top.php";
-    private static final Parser parser = new WorldArtParser();
+    private static final Parser parser = WorldArtParser.getInstance();
 
     public void ScrapeTopFilmsList() throws IOException {
         HtmlPage filmsTop = PageHandler.getPage(topFilmsUrl);

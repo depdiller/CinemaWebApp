@@ -4,10 +4,11 @@ import com.depdiller.insertionapp.model.Film;
 import com.depdiller.insertionapp.model.Person;
 import com.gargoylesoftware.htmlunit.html.*;
 
-import java.text.ParseException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,12 @@ public class WorldArtParser implements Parser {
     private static final String personAttributesTable = "/html/body/center/table[6]/tbody/tr/td/table[2]/" +
             "tbody/tr/td[4]/table[1]/tbody/tr/td[4]/table/tbody/tr/td/table";
     private static final String metaDataKeywordsXpath = "/html/head/meta[2]";
+
+    private static final WorldArtParser instance = new WorldArtParser();
+    private WorldArtParser() {}
+    public static WorldArtParser getInstance() {
+        return instance;
+    }
 
     @Override
     public Film filmParse(HtmlPage filmPage) throws IllegalArgumentException {
@@ -63,13 +70,22 @@ public class WorldArtParser implements Parser {
         filmAttributes.put("Русское название", filmTitle);
         filmAttributes.put("Постер", posterUrl);
 
-        Film film = null;
+
+        Film film = WorldArtObjectProducer.filmMap(filmAttributes);
+        HtmlAnchor castListAnchor = filmPage
+                .getFirstByXPath("//a[contains(@href, 'cinema_full_cast.php')]");
         try {
-            film = WorldArtObjectProducer.filmMap(filmAttributes);
-        } catch (ParseException e) {
+            if (castListAnchor != null) {
+                HtmlPage castPage = castListAnchor.click();
+                CompletableFuture<Void> peopleFuture = FilmCastHandlerAsync
+                        .parseFilmCastAsync(castPage);
+                peopleFuture.join();
+            }
+            return film;
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return film;
+        return null;
     }
 
     @Override
@@ -100,7 +116,6 @@ public class WorldArtParser implements Parser {
                 .collect(Collectors.toMap(array -> array[0], array -> array[1]));
         personAttributes.put("Имя", personName);
 
-        Person person = WorldArtObjectProducer.personMap(personAttributes);
-        return person;
+        return WorldArtObjectProducer.personMap(personAttributes);
     }
 }
