@@ -72,6 +72,7 @@ public class FilmCastHandlerAsync {
                     }
                 }, executor))
                 .map(future -> future.thenApply(parser::personParse))
+                .map(future -> future.thenAccept(System.out::println))
                 .toArray(CompletableFuture[]::new);
         return CompletableFuture.allOf(futurePeople);
     }

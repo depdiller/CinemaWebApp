@@ -57,7 +57,7 @@ public class WorldArtObjectProducer {
         }
     }
 
-    public static Film filmMap(@NonNull Map<String, String> filmData) {
+    public static Film filmMap(@NonNull Map<String, String> filmData, Map<String, String> links) {
         String name = filmData.get(WebsiteFilmTagNames.name.russianTag);
         String poster = filmData.get(WebsiteFilmTagNames.poster.russianTag);
 
@@ -104,10 +104,11 @@ public class WorldArtObjectProducer {
                 .worldPremier(date)
                 .duration(duration)
                 .moneyEarnedWorldWide(money)
+                .linkOnOtherWebsites(links)
                 .build();
     }
 
-    public static Person personMap(Map<String, String> personData) {
+    public static Person personMap(Map<String, String> personData, Map<String, String> links) {
         String name = personData.get(WebsitePersonTagNames.name.russianTag);
 
         LocalDate birthdate = RegexPatternMatcher
@@ -130,6 +131,7 @@ public class WorldArtObjectProducer {
                 .birthdate(birthdate)
                 .gender(gender)
                 .birthPlace(birthPlace)
+                .linkOnOtherWebsites(links)
                 .build();
     }
 

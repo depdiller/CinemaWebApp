@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @ToString
 @Builder
@@ -12,4 +13,5 @@ public class Person {
     private LocalDate birthdate;
     private Gender gender;
     private BirthPlace birthPlace;
+    private Map<String, String> linkOnOtherWebsites;
 }

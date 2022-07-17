@@ -3,14 +3,14 @@ package com.depdiller.insertionapp.service;
 import com.depdiller.insertionapp.model.Film;
 import com.depdiller.insertionapp.model.Person;
 import com.gargoylesoftware.htmlunit.html.*;
+import lombok.NonNull;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WorldArtParser implements Parser {
     private static final Set<String> russianFilmTags = Set.of("Названия", "Производство", "Хронометраж",
@@ -38,14 +38,13 @@ public class WorldArtParser implements Parser {
     }
 
     @Override
-    public Film filmParse(HtmlPage filmPage) throws IllegalArgumentException {
+    public Film filmParse(@NonNull HtmlPage filmPage) throws IllegalArgumentException {
         HtmlElement head = filmPage.getHead();
         HtmlMeta metaKeywords = filmPage
                 .getHead()
                 .getFirstByXPath(metaDataKeywordsXpath);
         String keywords = metaKeywords.getContentAttribute();
         String keywordsRegex = "^.*\\b(фильм)\\b.*";
-
         if (!keywords.matches(keywordsRegex))
             throw new IllegalArgumentException("Method can take only film page");
 
@@ -66,12 +65,11 @@ public class WorldArtParser implements Parser {
                 })
                 .filter(array -> russianFilmTags.contains(array[0]))
                 .collect(Collectors.toMap(array -> array[0], array -> array[1]));
-
         filmAttributes.put("Русское название", filmTitle);
         filmAttributes.put("Постер", posterUrl);
 
-
-        Film film = WorldArtObjectProducer.filmMap(filmAttributes);
+        Map<String, String> linksToFilm = LinksHandler.getLinks(filmPage);
+        Film film = WorldArtObjectProducer.filmMap(filmAttributes, linksToFilm);
         HtmlAnchor castListAnchor = filmPage
                 .getFirstByXPath("//a[contains(@href, 'cinema_full_cast.php')]");
         try {
@@ -79,9 +77,7 @@ public class WorldArtParser implements Parser {
                 HtmlPage castPage = castListAnchor.click();
                 CompletableFuture<Void> peopleFuture = FilmCastHandlerAsync
                         .parseFilmCastAsync(castPage);
-                long start = System.nanoTime();
                 peopleFuture.join();
-                System.out.println("Async cast parser done in " + ((System.nanoTime() - start) / 1_000_000) + " milliseconds");
             }
             return film;
         } catch (IOException e) {
@@ -91,7 +87,7 @@ public class WorldArtParser implements Parser {
     }
 
     @Override
-    public Person personParse(HtmlPage page) {
+    public Person personParse(@NonNull HtmlPage page) {
         HtmlElement head = page.getHead();
         HtmlMeta metaKeywords = page
                 .getHead()
@@ -118,6 +114,7 @@ public class WorldArtParser implements Parser {
                 .collect(Collectors.toMap(array -> array[0], array -> array[1]));
         personAttributes.put("Имя", personName);
 
-        return WorldArtObjectProducer.personMap(personAttributes);
+        Map<String, String> linksToPerson = LinksHandler.getLinks(page);
+        return WorldArtObjectProducer.personMap(personAttributes, linksToPerson);
     }
 }
