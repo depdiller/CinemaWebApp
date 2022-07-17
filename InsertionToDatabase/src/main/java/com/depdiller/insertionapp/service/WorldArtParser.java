@@ -79,7 +79,9 @@ public class WorldArtParser implements Parser {
                 HtmlPage castPage = castListAnchor.click();
                 CompletableFuture<Void> peopleFuture = FilmCastHandlerAsync
                         .parseFilmCastAsync(castPage);
+                long start = System.nanoTime();
                 peopleFuture.join();
+                System.out.println("Async cast parser done in " + ((System.nanoTime() - start) / 1_000_000) + " milliseconds");
             }
             return film;
         } catch (IOException e) {

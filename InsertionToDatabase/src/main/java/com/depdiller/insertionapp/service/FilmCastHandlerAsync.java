@@ -22,7 +22,7 @@ public class FilmCastHandlerAsync {
             "Продюсеры", "Операторы", "Композиторы");
     private static final Parser parser = WorldArtParser.getInstance();
     private static final Executor executor =
-            Executors.newFixedThreadPool(1,
+            Executors.newFixedThreadPool(10,
                     (Runnable r) -> {
                         Thread thread = new Thread(r);
                         thread.setDaemon(true);
@@ -34,7 +34,7 @@ public class FilmCastHandlerAsync {
         HtmlElement head = filmCastPage.getHead();
         HtmlMeta metaKeywords = filmCastPage
                 .getHead()
-                .getFirstByXPath("//meta[contains(@name, 'description')]");
+                .getFirstByXPath(".//meta[contains(@name, 'description')]");
         String keywords = metaKeywords.getContentAttribute();
         String keywordsRegex = "^.*\\b(режиссер фильма|актеры фильма|" +
                 "операторы фильма|продюсеры фильма|сценаристы фильма)\\b.*";
@@ -52,7 +52,7 @@ public class FilmCastHandlerAsync {
 
         CompletableFuture[] peopleFutures = castRoles.stream()
                 .map(filmCastData::get)
-                .map(element -> element.<HtmlAnchor>getByXPath("//a[contains(@href, '../people.php')]"))
+                .map(element -> element.<HtmlAnchor>getByXPath(".//tr/td[2]/a[contains(@href, '../people.php')]"))
                 .map(FilmCastHandlerAsync::startParseByRoleAsync)
                 .toArray(CompletableFuture[]::new);
         return CompletableFuture.allOf(peopleFutures);
@@ -60,19 +60,18 @@ public class FilmCastHandlerAsync {
 
     private static CompletableFuture<Void> startParseByRoleAsync(List<HtmlAnchor> peopleRefsAnchors) {
         CompletableFuture[] futurePeople = peopleRefsAnchors.stream()
-                .limit(10)
+                .limit(5)
                 .map(anchor -> CompletableFuture.supplyAsync(() -> {
                     try {
                         String url = anchor.getHrefAttribute().replace("..", "http://www.world-art.ru");
                         HtmlPage page = ThreadSafeHtmlUnitConfig.getWebClient().getPage(url);
-//                            HtmlPage page = anchor.click();
+//                        HtmlPage page = anchor.click();
                         return page;
                     } catch (IOException e) {
                         throw new RuntimeException();
                     }
                 }, executor))
                 .map(future -> future.thenApply(parser::personParse))
-                .map(future -> future.thenAccept(System.out::println))
                 .toArray(CompletableFuture[]::new);
         return CompletableFuture.allOf(futurePeople);
     }
