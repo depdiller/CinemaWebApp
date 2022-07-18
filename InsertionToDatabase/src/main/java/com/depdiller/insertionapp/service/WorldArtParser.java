@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class WorldArtParser implements Parser {
     private static final Set<String> russianFilmTags = Set.of("Названия", "Производство", "Хронометраж",

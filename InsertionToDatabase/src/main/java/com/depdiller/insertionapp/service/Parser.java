@@ -4,8 +4,6 @@ import com.depdiller.insertionapp.model.Film;
 import com.depdiller.insertionapp.model.Person;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
-import java.text.ParseException;
-
 public interface Parser {
     Film filmParse(HtmlPage page);
     Person personParse(HtmlPage page);
