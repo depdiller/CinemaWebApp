@@ -4,14 +4,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
 @Entity
 public class Person {
     @Id
@@ -24,7 +24,25 @@ public class Person {
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
-    private BirthPlace birthPlace;
+    @OneToOne
+    private Place birthPlace;
 
-    private Map<String, String> linkOnOtherWebsites;
+    @ManyToMany
+    private Set<WebsiteLink> linkOnOtherWebsites;
+
+    @ManyToMany
+    @JoinTable(name = "BirthPlace",
+            joinColumns = @JoinColumn(name = "personid"),
+            inverseJoinColumns = @JoinColumn(name = "placeid"))
+    private Set<Place> places = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "LinksToPerson",
+            joinColumns = @JoinColumn(name = "personid"),
+            inverseJoinColumns = @JoinColumn(name = "linkid"))
+    private Set<WebsiteLink> websiteLinks = new HashSet<>();
+
+    @OneToMany(mappedBy = "personid")
+    private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
+
 }

@@ -95,17 +95,7 @@ public class WorldArtObjectProducer {
                 })
                 .orElse(null);
 
-        return Film.builder()
-                .name(name)
-                .alternativeName(alternativeName)
-                .posterLink(poster)
-                .countries(countries)
-                .genres(genres)
-                .worldPremier(date)
-                .duration(duration)
-                .moneyEarnedWorldWide(money)
-                .linkOnOtherWebsites(links)
-                .build();
+        return new Film();
     }
 
     public static Person personMap(Map<String, String> personData, Map<String, String> links) {
@@ -121,9 +111,9 @@ public class WorldArtObjectProducer {
                 .map(Gender::getGender)
                 .orElse(null);
 
-        BirthPlace birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
+        Place birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
                 .map(placeString -> placeString.split("(\\s+|,\\s+)"))
-                .map(place -> new BirthPlace(place[0], place[1]))
+                .map(place -> new Place(place[0], place[1]))
                 .orElse(null);
 
         return Person.builder()
@@ -133,9 +123,5 @@ public class WorldArtObjectProducer {
                 .birthPlace(birthPlace)
                 .linkOnOtherWebsites(links)
                 .build();
-    }
-
-    public TvShow tvShowMap(Map<String, String> tvShowData) {
-        return null;
     }
 }

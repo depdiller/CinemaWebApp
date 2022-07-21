@@ -5,30 +5,51 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
 @Entity
 public class Film {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "filmid")
     private Long filmId;
     private String name;
     private String alternativeName;
     private String posterLink;
-    private List<String> countries;
-    private List<String> genres;
-    private Map<String, String> linkOnOtherWebsites;
     private LocalDate worldPremier;
     private Integer duration;
     private BigDecimal moneyEarnedWorldWide;
+
+    @ManyToMany
+    @JoinTable(name = "LinksToFilm",
+            joinColumns = @JoinColumn(name = "filmid"),
+            inverseJoinColumns = @JoinColumn(name = "linkid"))
+    private Set<WebsiteLink> websiteLinks = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "FilmGenre",
+            joinColumns = @JoinColumn(name = "filmid"),
+            inverseJoinColumns = @JoinColumn(name = "genre"))
+    private Set<Genre> genres = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "FilmCountry",
+            joinColumns = @JoinColumn(name = "filmid"),
+            inverseJoinColumns = @JoinColumn(name = "countryname"))
+    private Set<Country> countries = new HashSet<>();
+
+    @Column(name = "durationMinutes")
+    private Integer durationMinutes;
+
+    @OneToMany(mappedBy = "filmid")
+    private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

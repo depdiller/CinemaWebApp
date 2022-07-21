@@ -1,24 +1,30 @@
 package com.depdiller.insertionapp;
 
-import com.depdiller.insertionapp.model.Film;
 import com.depdiller.insertionapp.service.HibernateUtil;
-import com.depdiller.insertionapp.service.PageHandler;
-import com.depdiller.insertionapp.service.Parser;
-import com.depdiller.insertionapp.service.WorldArtParser;
 import org.hibernate.Session;
-
-import java.io.IOException;
+import org.hibernate.Transaction;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 public class InsertionApp {
-    public static void main(String... args) throws IOException {
-//        long start = System.nanoTime();
-//        String filmUrl = "http://www.world-art.ru/cinema/cinema.php?id=4110";
-//        Parser parser = WorldArtParser.getInstance();
-//        Film film = parser.filmParse(PageHandler.getPage(filmUrl));
-//        System.out.println(film);
-//        System.out.println("Parsed in " + ((System.nanoTime() - start) / 1_000_000) + " milliseconds");
-        var sessionFactory = HibernateUtil.buildSessionFactory();
-        Session session = sessionFactory.openSession();
-        System.out.println(session);
+    public static void main(String... args) {
+        Session session = HibernateUtil.createSession();
+        Transaction transaction = session.getTransaction();
+        try {
+            transaction.begin();
+            transaction.commit();
+        } catch (Exception ex) {
+            try {
+                if(transaction.getStatus() == TransactionStatus.ACTIVE
+                        || transaction.getStatus() == TransactionStatus.MARKED_ROLLBACK)
+                    transaction.rollback();
+            } catch (Exception rbEx) {
+                System.err.println("Rollback of transaction failed, trace follows!");
+                rbEx.printStackTrace(System.err);
+            }
+            throw new RuntimeException(ex);
+        } finally {
+            if (session.isOpen())
+                session.close();
+        }
     }
 }
