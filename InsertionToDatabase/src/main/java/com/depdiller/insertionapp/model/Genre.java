@@ -17,6 +17,9 @@ import java.util.Set;
 public class Genre {
     @Id
     private String genre;
+    public Genre(String genre) {
+        this.genre = genre;
+    }
 
     @ManyToMany(mappedBy = "genres")
     private Set<Film> films = new LinkedHashSet<>();

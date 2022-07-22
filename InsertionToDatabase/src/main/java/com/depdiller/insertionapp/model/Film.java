@@ -24,7 +24,6 @@ public class Film {
     private String alternativeName;
     private String posterLink;
     private LocalDate worldPremier;
-    private Integer duration;
     private BigDecimal moneyEarnedWorldWide;
 
     @ManyToMany
@@ -48,7 +47,7 @@ public class Film {
     @Column(name = "durationMinutes")
     private Integer durationMinutes;
 
-    @OneToMany(mappedBy = "filmid")
+    @OneToMany(mappedBy = "partid")
     private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
 
     @Override

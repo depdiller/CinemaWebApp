@@ -1,7 +1,11 @@
 package com.depdiller.insertionapp.service;
 
+import com.depdiller.insertionapp.config.HibernateUtil;
 import com.depdiller.insertionapp.model.*;
 import lombok.NonNull;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -9,9 +13,9 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WorldArtObjectProducer {
     private static final String durationPattern = "(^[0-9]+)";
@@ -34,6 +38,13 @@ public class WorldArtObjectProducer {
                     return decimalFormat;
                 }
             };
+    private static final ThreadLocal<Session> HIBERNATE_SESSION =
+            new ThreadLocal<>() {
+                @Override
+                protected Session initialValue() {
+                    return HibernateUtil.createSession();
+                }
+            };
 
     private enum WebsiteFilmTagNames {
         name("Русское название"), poster("Постер"),
@@ -42,6 +53,7 @@ public class WorldArtObjectProducer {
         worldPremier("Первый показ"), moneyEarnedWorldWide("Мировые сборы");
 
         private final String russianTag;
+
         WebsiteFilmTagNames(String russianTag) {
             this.russianTag = russianTag;
         }
@@ -52,21 +64,30 @@ public class WorldArtObjectProducer {
         birthPlace("Место рождения");
 
         private final String russianTag;
+
         WebsitePersonTagNames(String russianTag) {
             this.russianTag = russianTag;
         }
     }
 
-    public static Film filmMap(@NonNull Map<String, String> filmData, Map<String, String> links) {
+    public static void filmMap(@NonNull Map<String, String> filmData, Map<String, String> links) {
         String name = filmData.get(WebsiteFilmTagNames.name.russianTag);
         String poster = filmData.get(WebsiteFilmTagNames.poster.russianTag);
+        Session session = HIBERNATE_SESSION.get();
+        Transaction tx = session.getTransaction();
 
-        List<String> countries = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.countries.russianTag))
-                .map(str -> List.of(str.split("(\\s+|,\\s+)")))
+        Set<Country> countries = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.countries.russianTag))
+                .map(str ->
+                        Stream.of(str.split("(\\s+|,\\s+)"))
+                                .map(Country::new)
+                                .collect(Collectors.toSet())
+                )
                 .orElse(null);
 
-        List<String> genres = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.genres.russianTag))
-                .map(str -> List.of(str.split("(\\s+|,\\s+)")))
+        Set<Genre> genres = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.genres.russianTag))
+                .map(str -> Stream.of(str.split("(\\s+|,\\s+)"))
+                        .map(Genre::new)
+                        .collect(Collectors.toSet()))
                 .orElse(null);
 
         String alternativeName = RegexPatternMatcher
@@ -81,7 +102,7 @@ public class WorldArtObjectProducer {
         Integer duration = RegexPatternMatcher
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.duration.russianTag), durationPattern)
                 .map(Integer::parseInt)
-                .orElse(null );
+                .orElse(null);
 
         BigDecimal money = RegexPatternMatcher
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.moneyEarnedWorldWide.russianTag), moneyEarnedWorldWidePattern)
@@ -95,10 +116,59 @@ public class WorldArtObjectProducer {
                 })
                 .orElse(null);
 
-        return new Film();
+        Film film = Film.builder()
+                .name(name)
+                .alternativeName(alternativeName)
+                .posterLink(poster)
+                .durationMinutes(duration)
+                .genres(genres)
+                .countries(countries)
+                .moneyEarnedWorldWide(money)
+                .worldPremier(date)
+                .build();
+
+        Set<WebsiteLink> linksNotAttachedToFilmYet = links.keySet().stream()
+                .filter(Objects::nonNull)
+                .map(website ->
+                     new String[] { website, links.get(website) }
+                )
+                .map(array -> {
+                    Website website = new Website(array[0]);
+                    session.persist(website);
+                    WebsiteLink websiteLink = new WebsiteLink();
+                    websiteLink.setWebsitename(website);
+                    websiteLink.setLink(array[1]);
+                    session.persist(websiteLink);
+                    return websiteLink;
+                })
+                .collect(Collectors.toSet());
+
+        try {
+            tx.begin();
+            Optional.ofNullable(countries)
+                    .ifPresent(countriesList -> countriesList.forEach(session::persist));
+            Optional.ofNullable(genres)
+                    .ifPresent(countriesList -> countriesList.forEach(session::persist));
+            film.setWebsiteLinks(linksNotAttachedToFilmYet);
+            session.persist(film);
+            tx.commit();
+        } catch (Exception ex) {
+            try {
+                if (tx.getStatus() == TransactionStatus.ACTIVE
+                        || tx.getStatus() == TransactionStatus.MARKED_ROLLBACK)
+                    tx.rollback();
+            } catch (Exception rbEx) {
+                System.err.println("Rollback of transaction failed, trace follows!");
+                rbEx.printStackTrace(System.err);
+            }
+            throw new RuntimeException(ex);
+        } finally {
+            if (session.isOpen())
+                session.close();
+        }
     }
 
-    public static Person personMap(Map<String, String> personData, Map<String, String> links) {
+    public static void personMap(Map<String, String> personData, Map<String, String> links) {
         String name = personData.get(WebsitePersonTagNames.name.russianTag);
 
         LocalDate birthdate = RegexPatternMatcher
@@ -111,17 +181,17 @@ public class WorldArtObjectProducer {
                 .map(Gender::getGender)
                 .orElse(null);
 
-        Place birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
-                .map(placeString -> placeString.split("(\\s+|,\\s+)"))
-                .map(place -> new Place(place[0], place[1]))
-                .orElse(null);
+//        Place birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
+//                .map(placeString -> placeString.split("(\\s+|,\\s+)"))
+//                .map(place -> new Place(place[0], place[1]))
+//                .orElse(null);
 
-        return Person.builder()
-                .name(name)
-                .birthdate(birthdate)
-                .gender(gender)
-                .birthPlace(birthPlace)
-                .linkOnOtherWebsites(links)
-                .build();
+//        return Person.builder()
+//                .name(name)
+//                .birthdate(birthdate)
+//                .gender(gender)
+//                .birthPlace(birthPlace)
+//                .linkOnOtherWebsites(links)
+//                .build();
     }
 }

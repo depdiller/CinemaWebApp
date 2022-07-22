@@ -24,12 +24,6 @@ public class Person {
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
-    @OneToOne
-    private Place birthPlace;
-
-    @ManyToMany
-    private Set<WebsiteLink> linkOnOtherWebsites;
-
     @ManyToMany
     @JoinTable(name = "BirthPlace",
             joinColumns = @JoinColumn(name = "personid"),

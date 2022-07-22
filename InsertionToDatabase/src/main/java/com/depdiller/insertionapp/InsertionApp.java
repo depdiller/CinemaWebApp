@@ -1,30 +1,18 @@
 package com.depdiller.insertionapp;
 
-import com.depdiller.insertionapp.service.HibernateUtil;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
+import com.depdiller.insertionapp.service.PageHandler;
+import com.depdiller.insertionapp.service.Parser;
+import com.depdiller.insertionapp.service.WorldArtParser;
+
+import java.io.IOException;
 
 public class InsertionApp {
-    public static void main(String... args) {
-        Session session = HibernateUtil.createSession();
-        Transaction transaction = session.getTransaction();
-        try {
-            transaction.begin();
-            transaction.commit();
-        } catch (Exception ex) {
-            try {
-                if(transaction.getStatus() == TransactionStatus.ACTIVE
-                        || transaction.getStatus() == TransactionStatus.MARKED_ROLLBACK)
-                    transaction.rollback();
-            } catch (Exception rbEx) {
-                System.err.println("Rollback of transaction failed, trace follows!");
-                rbEx.printStackTrace(System.err);
-            }
-            throw new RuntimeException(ex);
-        } finally {
-            if (session.isOpen())
-                session.close();
+    public static void main(String... args) throws IOException {
+        String filmUrl;
+        Parser parser = WorldArtParser.getInstance();
+        for (int i = 4110; i < 4120; ++i) {
+            filmUrl = String.format("http://www.world-art.ru/cinema/cinema.php?id=%d", i);
+            parser.filmParse(PageHandler.getPage(filmUrl));
         }
     }
 }

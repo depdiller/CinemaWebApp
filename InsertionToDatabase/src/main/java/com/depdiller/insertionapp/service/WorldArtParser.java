@@ -68,7 +68,7 @@ public class WorldArtParser implements Parser {
         filmAttributes.put("Постер", posterUrl);
 
         Map<String, String> linksToFilm = LinksHandler.getLinks(filmPage);
-        Film film = WorldArtObjectProducer.filmMap(filmAttributes, linksToFilm);
+        WorldArtObjectProducer.filmMap(filmAttributes, linksToFilm);
         HtmlAnchor castListAnchor = filmPage
                 .getFirstByXPath("//a[contains(@href, 'cinema_full_cast.php')]");
         try {
@@ -78,7 +78,6 @@ public class WorldArtParser implements Parser {
                         .parseFilmCastAsync(castPage);
                 peopleFuture.join();
             }
-            return film;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -114,6 +113,7 @@ public class WorldArtParser implements Parser {
         personAttributes.put("Имя", personName);
 
         Map<String, String> linksToPerson = LinksHandler.getLinks(page);
-        return WorldArtObjectProducer.personMap(personAttributes, linksToPerson);
+        WorldArtObjectProducer.personMap(personAttributes, linksToPerson);
+        return null;
     }
 }

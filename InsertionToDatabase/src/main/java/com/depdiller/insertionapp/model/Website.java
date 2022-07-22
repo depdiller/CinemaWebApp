@@ -1,11 +1,9 @@
 package com.depdiller.insertionapp.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -17,8 +15,10 @@ import java.util.Set;
 public class Website {
     @Id
     private String websiteName;
+    public Website(String websiteName) {
+        this.websiteName = websiteName;
+    }
 
-    @OneToMany(mappedBy = "websitename")
-    private Set<WebsiteLink> websiteLinks = new LinkedHashSet<>();
-
+    @OneToMany(mappedBy = "websitename", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<WebsiteLink> websiteLinks = new HashSet<>();
 }

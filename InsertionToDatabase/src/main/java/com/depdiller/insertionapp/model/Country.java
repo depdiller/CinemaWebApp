@@ -18,6 +18,9 @@ import java.util.Set;
 public class Country {
     @Id
     private String countryName;
+    public Country(String countryName) {
+        this.countryName = countryName;
+    }
 
     @OneToMany(mappedBy = "countryname")
     private Set<Place> places = new LinkedHashSet<>();

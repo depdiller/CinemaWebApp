@@ -12,13 +12,13 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 public class Place {
-    @ManyToMany(mappedBy = "places")
-    private Set<Person> people = new LinkedHashSet<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "placeid", nullable = false)
     private Long id;
+
+    @ManyToMany(mappedBy = "places")
+    private Set<Person> people = new LinkedHashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cityname")
