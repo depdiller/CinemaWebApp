@@ -25,7 +25,7 @@ public class WebsiteLink {
     @ManyToMany(mappedBy = "websiteLinks")
     private Set<Person> people = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "websitename")
     private Website websitename;
 }

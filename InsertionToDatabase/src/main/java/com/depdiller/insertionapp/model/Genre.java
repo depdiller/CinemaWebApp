@@ -4,8 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import lombok.*;
+import org.hibernate.annotations.SQLInsert;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -14,6 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@SQLInsert(sql = "insert into genre (genre) values (?) on conflict do nothing")
 public class Genre {
     @Id
     private String genre;
@@ -22,6 +24,6 @@ public class Genre {
     }
 
     @ManyToMany(mappedBy = "genres")
-    private Set<Film> films = new LinkedHashSet<>();
+    private Set<Film> films = new HashSet<>();
 
 }

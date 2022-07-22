@@ -5,8 +5,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import lombok.*;
+import org.hibernate.annotations.SQLInsert;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -15,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@SQLInsert(sql = "insert into country (countryname) values (?) on conflict do nothing")
 public class Country {
     @Id
     private String countryName;
@@ -23,9 +25,8 @@ public class Country {
     }
 
     @OneToMany(mappedBy = "countryname")
-    private Set<Place> places = new LinkedHashSet<>();
+    private Set<Place> places = new HashSet<>();
 
     @ManyToMany(mappedBy = "countries")
-    private Set<Film> films = new LinkedHashSet<>();
-
+    private Set<Film> films = new HashSet<>();
 }

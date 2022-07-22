@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Builder
@@ -24,11 +25,8 @@ public class Person {
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
-    @ManyToMany
-    @JoinTable(name = "BirthPlace",
-            joinColumns = @JoinColumn(name = "personid"),
-            inverseJoinColumns = @JoinColumn(name = "placeid"))
-    private Set<Place> places = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Place birthPlace;
 
     @ManyToMany
     @JoinTable(name = "LinksToPerson",
@@ -39,4 +37,7 @@ public class Person {
     @OneToMany(mappedBy = "personid")
     private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "birthplace")
+    private Place birthplace;
 }

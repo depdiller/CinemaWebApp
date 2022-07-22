@@ -1,5 +1,6 @@
 package com.depdiller.insertionapp.config;
 
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -17,7 +18,10 @@ public class HibernateUtil {
         }
     }
     public static Session createSession() {
-        sessionFactory.createEntityManager();
         return sessionFactory.openSession();
+    }
+
+    public static EntityManager creatEntityManager() {
+        return sessionFactory.createEntityManager();
     }
 }

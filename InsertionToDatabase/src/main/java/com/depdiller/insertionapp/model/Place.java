@@ -3,6 +3,7 @@ package com.depdiller.insertionapp.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -17,8 +18,16 @@ public class Place {
     @Column(name = "placeid", nullable = false)
     private Long id;
 
-    @ManyToMany(mappedBy = "places")
+    @OneToMany(mappedBy = "birthplace")
     private Set<Person> people = new LinkedHashSet<>();
+
+    public Place(City city, Country country) {
+        this.cityname = city;
+        this.countryname = country;
+    }
+
+//    @OneToMany(mappedBy = "birthPlace")
+//    private Set<Person> people = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cityname")

@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WorldArtParser implements Parser {
     private static final Set<String> russianFilmTags = Set.of("Названия", "Производство", "Хронометраж",
@@ -68,15 +69,18 @@ public class WorldArtParser implements Parser {
         filmAttributes.put("Постер", posterUrl);
 
         Map<String, String> linksToFilm = LinksHandler.getLinks(filmPage);
-        WorldArtObjectProducer.filmMap(filmAttributes, linksToFilm);
+        Film film = WorldArtObjectProducer.filmMap(filmAttributes, linksToFilm);
         HtmlAnchor castListAnchor = filmPage
                 .getFirstByXPath("//a[contains(@href, 'cinema_full_cast.php')]");
         try {
             if (castListAnchor != null) {
                 HtmlPage castPage = castListAnchor.click();
-                CompletableFuture<Void> peopleFuture = FilmCastHandlerAsync
+                Stream<List<CompletableFuture<Person>>> peopleFuture = FilmCastHandlerAsync
                         .parseFilmCastAsync(castPage);
-                peopleFuture.join();
+                peopleFuture.map(list -> {
+                    list.stream()
+                            .map(future -> future.thenApply());
+                });
             }
         } catch (IOException e) {
             e.printStackTrace();

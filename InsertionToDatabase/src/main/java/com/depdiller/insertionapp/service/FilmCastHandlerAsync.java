@@ -1,6 +1,7 @@
 package com.depdiller.insertionapp.service;
 
 import com.depdiller.insertionapp.config.ThreadSafeHtmlUnitConfig;
+import com.depdiller.insertionapp.model.Person;
 import com.gargoylesoftware.htmlunit.html.*;
 import lombok.NonNull;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FilmCastHandlerAsync {
     private static final String castTableDivsXpath = "/html/body/center/table[7]/tbody/tr/td/table/" +
@@ -30,7 +32,7 @@ public class FilmCastHandlerAsync {
                     }
             );
 
-    public static CompletableFuture<Void> parseFilmCastAsync(@NonNull HtmlPage filmCastPage) {
+    public static Stream<List<CompletableFuture<Person>>> parseFilmCastAsync(@NonNull HtmlPage filmCastPage) {
         HtmlElement head = filmCastPage.getHead();
         HtmlMeta metaKeywords = filmCastPage
                 .getHead()
@@ -50,30 +52,27 @@ public class FilmCastHandlerAsync {
                     return tableNameElement.asNormalizedText();
                 }, div -> div));
 
-        CompletableFuture[] peopleFutures = castRoles.stream()
+        return castRoles.stream()
                 .map(filmCastData::get)
                 .map(element -> element.<HtmlAnchor>getByXPath(".//tr/td[2]/a[contains(@href, '../people.php')]"))
-                .map(FilmCastHandlerAsync::startParseByRoleAsync)
-                .toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(peopleFutures);
+                .map(FilmCastHandlerAsync::startParseByRoleAsync);
     }
 
-    private static CompletableFuture<Void> startParseByRoleAsync(List<HtmlAnchor> peopleRefsAnchors) {
-        CompletableFuture[] futurePeople = peopleRefsAnchors.stream()
+    private static List<CompletableFuture<Person>> startParseByRoleAsync(List<HtmlAnchor> peopleRefsAnchors) {
+        List<CompletableFuture<Person>> futurePeople = peopleRefsAnchors.stream()
                 .limit(5)
                 .map(anchor -> CompletableFuture.supplyAsync(() -> {
                     try {
                         String url = anchor.getHrefAttribute().replace("..", "http://www.world-art.ru");
-                        HtmlPage page = ThreadSafeHtmlUnitConfig.getWebClient().getPage(url);
-//                        HtmlPage page = anchor.click();
+//                        HtmlPage page = ThreadSafeHtmlUnitConfig.getWebClient().getPage(url);
+                        HtmlPage page = anchor.click();
                         return page;
                     } catch (IOException e) {
                         throw new RuntimeException();
                     }
                 }, executor))
                 .map(future -> future.thenApply(parser::personParse))
-                .map(future -> future.thenAccept(System.out::println))
-                .toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(futurePeople);
+                .collect(Collectors.toList());
+        return futurePeople;
     }
 }

@@ -26,7 +26,7 @@ public class Film {
     private LocalDate worldPremier;
     private BigDecimal moneyEarnedWorldWide;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "LinksToFilm",
             joinColumns = @JoinColumn(name = "filmid"),
             inverseJoinColumns = @JoinColumn(name = "linkid"))

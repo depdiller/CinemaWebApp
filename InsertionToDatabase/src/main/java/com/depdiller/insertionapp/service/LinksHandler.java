@@ -24,6 +24,7 @@ public class LinksHandler {
                             .orElse(null);
                     websiteNameAndXpath[1] = filmLink;
                 })
+                .filter(array -> Objects.nonNull(array[1]))
                 .forEach(nameAndLink -> resultLinks.put(nameAndLink[0], nameAndLink[1]));
         return resultLinks;
     }

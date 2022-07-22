@@ -62,7 +62,7 @@ public class WorldArtObjectProducer {
         }
     }
 
-    public static Film filmMap(@NonNull Map<String, String> filmData, Map<String, String> links) {
+    public static void filmMap(@NonNull Map<String, String> filmData, Map<String, String> links) {
         String name = filmData.get(WebsiteFilmTagNames.name.russianTag);
         String poster = filmData.get(WebsiteFilmTagNames.poster.russianTag);
 
@@ -106,7 +106,7 @@ public class WorldArtObjectProducer {
                 })
                 .orElse(null);
 
-        Set<WebsiteLink> linksToFilm = links.keySet().stream()
+        Set<WebsiteLink> linksNotAttachedToFilmYet = links.keySet().stream()
                 .filter(Objects::nonNull)
                 .map(website ->
                         new String[]{website, links.get(website)}
@@ -120,7 +120,7 @@ public class WorldArtObjectProducer {
                 })
                 .collect(Collectors.toSet());
 
-        return Film.builder()
+        Film film = Film.builder()
                 .name(name)
                 .alternativeName(alternativeName)
                 .posterLink(poster)
@@ -129,11 +129,42 @@ public class WorldArtObjectProducer {
                 .countries(countries)
                 .moneyEarnedWorldWide(money)
                 .worldPremier(date)
-                .websiteLinks(linksToFilm)
-                .build();
+                .build()
+
+        HibernateTransactionHandler hibernateTransactionHandler = new HibernateTransactionHandler(tx, entityManager);
+        hibernateTransactionHandler.runTransaction(() -> {
+            Optional.ofNullable(countries)
+                    .ifPresent(countriesList -> countriesList.forEach(entityManager::persist));
+            Optional.ofNullable(genres)
+                    .ifPresent(countriesList -> countriesList.forEach(entityManager::persist));
+            film.setWebsiteLinks(linksNotAttachedToFilmYet);
+            entityManager.persist(film);
+        });
+
+//        try {
+//            tx.begin();
+//            Optional.ofNullable(countries)
+//                    .ifPresent(countriesList -> countriesList.forEach(entityManager::persist));
+//            Optional.ofNullable(genres)
+//                    .ifPresent(countriesList -> countriesList.forEach(entityManager::persist));
+//            film.setWebsiteLinks(linksNotAttachedToFilmYet);
+//            entityManager.persist(film);
+//            tx.commit();
+//        } catch (Exception ex) {
+//            try {
+//                tx.rollback();
+//            } catch (Exception rbEx) {
+//                System.err.println("Rollback of transaction failed, trace follows!");
+//                rbEx.printStackTrace(System.err);
+//            }
+//            throw new RuntimeException(ex);
+//        } finally {
+//            if (entityManager.isOpen())
+//                entityManager.close();
+//        }
     }
 
-    public static Person personMap(Map<String, String> personData, Map<String, String> links) {
+    public static void personMap(Map<String, String> personData, Map<String, String> links) {
         String name = personData.get(WebsitePersonTagNames.name.russianTag);
 
         LocalDate birthdate = RegexPatternMatcher
@@ -146,35 +177,17 @@ public class WorldArtObjectProducer {
                 .map(Gender::getGender)
                 .orElse(null);
 
-        Place birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
-                .map(placeString -> placeString.split("(\\s+|,\\s+)"))
-                .map(array -> {
-                    City city = new City(array[0]);
-                    Country country = new Country(array[1]);
-                    return new Place(city, country);
-                })
-                .orElse(null);
+//        Place birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
+//                .map(placeString -> placeString.split("(\\s+|,\\s+)"))
+//                .map(place -> new Place(place[0], place[1]))
+//                .orElse(null);
 
-        Set<WebsiteLink> linksToPerson = links.keySet().stream()
-                .filter(Objects::nonNull)
-                .map(website ->
-                        new String[]{website, links.get(website)}
-                )
-                .map(array -> {
-                    Website website = new Website(array[0]);
-                    WebsiteLink websiteLink = new WebsiteLink();
-                    websiteLink.setWebsitename(website);
-                    websiteLink.setLink(array[1]);
-                    return websiteLink;
-                })
-                .collect(Collectors.toSet());
-
-        return Person.builder()
-                .name(name)
-                .birthdate(birthdate)
-                .gender(gender)
-                .birthPlace(birthPlace)
-                .websiteLinks(linksToPerson)
-                .build();
+//        return Person.builder()
+//                .name(name)
+//                .birthdate(birthdate)
+//                .gender(gender)
+//                .birthPlace(birthPlace)
+//                .linkOnOtherWebsites(links)
+//                .build();
     }
 }
