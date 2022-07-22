@@ -17,6 +17,9 @@ import java.util.Set;
 public class ParticipationValue {
     @Id
     private String partType;
+    public ParticipationValue(String partType) {
+        this.partType = partType;
+    }
 
     @OneToMany(mappedBy = "parttype")
     private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();

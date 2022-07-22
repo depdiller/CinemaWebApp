@@ -6,6 +6,7 @@ import com.gargoylesoftware.htmlunit.html.*;
 import lombok.NonNull;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class FilmCastHandlerAsync {
                     }
             );
 
-    public static Stream<List<CompletableFuture<Person>>> parseFilmCastAsync(@NonNull HtmlPage filmCastPage) {
+    public static Map<String, List<CompletableFuture<Person>>> parseFilmCastAsync(@NonNull HtmlPage filmCastPage) {
         HtmlElement head = filmCastPage.getHead();
         HtmlMeta metaKeywords = filmCastPage
                 .getHead()
@@ -52,10 +53,15 @@ public class FilmCastHandlerAsync {
                     return tableNameElement.asNormalizedText();
                 }, div -> div));
 
-        return castRoles.stream()
-                .map(filmCastData::get)
-                .map(element -> element.<HtmlAnchor>getByXPath(".//tr/td[2]/a[contains(@href, '../people.php')]"))
-                .map(FilmCastHandlerAsync::startParseByRoleAsync);
+        Map<String, List<CompletableFuture<Person>>> rolesWithFuturePeople = new HashMap<>();
+        for (String role : castRoles) {
+            HtmlElement roleElement = filmCastData.get(role);
+            List<HtmlAnchor> roleTableAnchors = roleElement
+                    .getByXPath(".//tr/td[2]/a[contains(@href, '../people.php')]");
+            List<CompletableFuture<Person>> futurePeople = FilmCastHandlerAsync.startParseByRoleAsync(roleTableAnchors);
+            rolesWithFuturePeople.put(role, futurePeople);
+        }
+        return rolesWithFuturePeople;
     }
 
     private static List<CompletableFuture<Person>> startParseByRoleAsync(List<HtmlAnchor> peopleRefsAnchors) {
@@ -64,8 +70,8 @@ public class FilmCastHandlerAsync {
                 .map(anchor -> CompletableFuture.supplyAsync(() -> {
                     try {
                         String url = anchor.getHrefAttribute().replace("..", "http://www.world-art.ru");
-//                        HtmlPage page = ThreadSafeHtmlUnitConfig.getWebClient().getPage(url);
-                        HtmlPage page = anchor.click();
+                        HtmlPage page = ThreadSafeHtmlUnitConfig.getWebClient().getPage(url);
+//                        HtmlPage page = anchor.click();
                         return page;
                     } catch (IOException e) {
                         throw new RuntimeException();

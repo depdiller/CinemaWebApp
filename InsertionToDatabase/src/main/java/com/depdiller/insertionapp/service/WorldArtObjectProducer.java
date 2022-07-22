@@ -1,9 +1,6 @@
 package com.depdiller.insertionapp.service;
 
-import com.depdiller.insertionapp.config.HibernateUtil;
 import com.depdiller.insertionapp.model.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import lombok.NonNull;
 
 import java.math.BigDecimal;
@@ -130,6 +127,7 @@ public class WorldArtObjectProducer {
                 .moneyEarnedWorldWide(money)
                 .worldPremier(date)
                 .websiteLinks(linksToFilm)
+                .personParticipationInFilms(new HashSet<>())
                 .build();
     }
 
@@ -175,6 +173,7 @@ public class WorldArtObjectProducer {
                 .gender(gender)
                 .birthPlace(birthPlace)
                 .websiteLinks(linksToPerson)
+                .personParticipationInFilms(new HashSet<>())
                 .build();
     }
 }

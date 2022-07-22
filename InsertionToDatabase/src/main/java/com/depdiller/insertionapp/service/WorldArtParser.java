@@ -1,7 +1,9 @@
 package com.depdiller.insertionapp.service;
 
 import com.depdiller.insertionapp.model.Film;
+import com.depdiller.insertionapp.model.ParticipationValue;
 import com.depdiller.insertionapp.model.Person;
+import com.depdiller.insertionapp.model.PersonParticipationInFilm;
 import com.gargoylesoftware.htmlunit.html.*;
 import lombok.NonNull;
 
@@ -75,12 +77,27 @@ public class WorldArtParser implements Parser {
         try {
             if (castListAnchor != null) {
                 HtmlPage castPage = castListAnchor.click();
-                Stream<List<CompletableFuture<Person>>> peopleFuture = FilmCastHandlerAsync
+                Map<String, List<CompletableFuture<Person>>> rolesWithFuturePeople = FilmCastHandlerAsync
                         .parseFilmCastAsync(castPage);
-                peopleFuture.map(list -> {
-                    list.stream()
-                            .map(future -> future.thenApply());
-                });
+                CompletableFuture[] result = rolesWithFuturePeople.keySet().stream()
+                        .map(role -> {
+                            var futurePeople = rolesWithFuturePeople.get(role);
+                            CompletableFuture[] parsedPeople = futurePeople.stream()
+                                    .peek(future -> future.thenAccept(person -> {
+                                        ParticipationValue partType = new ParticipationValue(role);
+                                        PersonParticipationInFilm participation = new PersonParticipationInFilm(
+                                                person, film, partType
+                                        );
+                                        person.getPersonParticipationInFilms().add(participation);
+                                        film.getPersonParticipationInFilms().add(participation);
+                                    }))
+                                    .toArray(CompletableFuture[]::new);
+                            return parsedPeople;
+                        })
+                        .map(CompletableFuture::allOf)
+                        .toArray(CompletableFuture[]::new);
+                CompletableFuture.allOf(result).join();
+                return film;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -117,7 +134,6 @@ public class WorldArtParser implements Parser {
         personAttributes.put("Имя", personName);
 
         Map<String, String> linksToPerson = LinksHandler.getLinks(page);
-        WorldArtObjectProducer.personMap(personAttributes, linksToPerson);
-        return null;
+        return WorldArtObjectProducer.personMap(personAttributes, linksToPerson);
     }
 }
