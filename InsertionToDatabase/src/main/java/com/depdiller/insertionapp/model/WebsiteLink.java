@@ -2,6 +2,8 @@ package com.depdiller.insertionapp.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,12 +22,15 @@ public class WebsiteLink {
     private String link;
 
     @ManyToMany(mappedBy = "websiteLinks")
+    @Cascade({ CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
     private Set<Film> films = new HashSet<>();
 
     @ManyToMany(mappedBy = "websiteLinks")
+    @Cascade({ CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
     private Set<Person> people = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Cascade(CascadeType.REFRESH)
     @JoinColumn(name = "websitename")
     private Website websitename;
 }

@@ -2,6 +2,7 @@ package com.depdiller.insertionapp.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -18,7 +19,7 @@ public class Place {
     @Column(name = "placeid", nullable = false)
     private Long id;
 
-    @OneToMany(mappedBy = "birthplace")
+    @OneToMany(mappedBy = "birthPlace", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Person> people = new LinkedHashSet<>();
 
     public Place(City city, Country country) {
@@ -26,14 +27,13 @@ public class Place {
         this.countryname = country;
     }
 
-//    @OneToMany(mappedBy = "birthPlace")
-//    private Set<Person> people = new HashSet<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
+    @Cascade(org.hibernate.annotations.CascadeType.REFRESH)
     @JoinColumn(name = "cityname")
     private City cityname;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Cascade(org.hibernate.annotations.CascadeType.REFRESH)
     @JoinColumn(name = "countryname")
     private Country countryname;
 

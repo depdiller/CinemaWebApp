@@ -2,6 +2,7 @@ package com.depdiller.insertionapp.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,18 +28,21 @@ public class Film {
     private BigDecimal moneyEarnedWorldWide;
 
     @ManyToMany(cascade = CascadeType.ALL)
+    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, org.hibernate.annotations.CascadeType.PERSIST})
     @JoinTable(name = "LinksToFilm",
             joinColumns = @JoinColumn(name = "filmid"),
             inverseJoinColumns = @JoinColumn(name = "linkid"))
     private Set<WebsiteLink> websiteLinks = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
+    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, org.hibernate.annotations.CascadeType.PERSIST})
     @JoinTable(name = "FilmGenre",
             joinColumns = @JoinColumn(name = "filmid"),
             inverseJoinColumns = @JoinColumn(name = "genre"))
     private Set<Genre> genres = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
+    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, org.hibernate.annotations.CascadeType.PERSIST})
     @JoinTable(name = "FilmCountry",
             joinColumns = @JoinColumn(name = "filmid"),
             inverseJoinColumns = @JoinColumn(name = "countryname"))
@@ -47,7 +51,7 @@ public class Film {
     @Column(name = "durationMinutes")
     private Integer durationMinutes;
 
-    @OneToMany(mappedBy = "partid")
+    @OneToMany(mappedBy = "partid", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
 
     @Override

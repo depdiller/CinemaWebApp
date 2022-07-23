@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.SQLInsert;
 
 import java.util.HashSet;
@@ -24,6 +26,7 @@ public class Genre {
     }
 
     @ManyToMany(mappedBy = "genres")
+    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, CascadeType.PERSIST})
     private Set<Film> films = new HashSet<>();
 
 }

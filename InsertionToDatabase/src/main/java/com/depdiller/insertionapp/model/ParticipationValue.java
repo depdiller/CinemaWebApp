@@ -1,9 +1,6 @@
 package com.depdiller.insertionapp.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +18,6 @@ public class ParticipationValue {
         this.partType = partType;
     }
 
-    @OneToMany(mappedBy = "parttype")
+    @OneToMany(mappedBy = "parttype", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 @Entity
 @Getter
@@ -21,6 +22,7 @@ public class PersonParticipationInFilm {
     private Long partid;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @Cascade(org.hibernate.annotations.CascadeType.REFRESH)
     @JoinColumn(name = "personid", nullable = false)
     private Person personid;
 

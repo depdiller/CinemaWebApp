@@ -1,4 +1,4 @@
-package com.depdiller.insertionapp.config;
+package com.depdiller.insertionapp.database;
 
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;

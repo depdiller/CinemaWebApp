@@ -1,10 +1,8 @@
 package com.depdiller.insertionapp.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.SQLInsert;
 
 import java.util.HashSet;
@@ -24,9 +22,10 @@ public class Country {
         this.countryName = countryName;
     }
 
-    @OneToMany(mappedBy = "countryname")
+    @OneToMany(mappedBy = "countryname", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Place> places = new HashSet<>();
 
     @ManyToMany(mappedBy = "countries")
+    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, org.hibernate.annotations.CascadeType.PERSIST})
     private Set<Film> films = new HashSet<>();
 }

@@ -1,11 +1,12 @@
-package com.depdiller.insertionapp.service;
+package com.depdiller.insertionapp.database;
 
-import com.depdiller.insertionapp.config.HibernateUtil;
+import com.depdiller.insertionapp.service.TransactionRunner;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
+@NoArgsConstructor
 public class HibernateTransactionHandler {
     private EntityTransaction tx;
     private EntityManager entityManager;
