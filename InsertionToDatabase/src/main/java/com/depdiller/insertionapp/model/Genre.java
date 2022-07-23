@@ -21,12 +21,12 @@ import java.util.Set;
 public class Genre {
     @Id
     private String genre;
+
     public Genre(String genre) {
         this.genre = genre;
     }
 
     @ManyToMany(mappedBy = "genres")
-    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, CascadeType.PERSIST})
+    @Cascade({CascadeType.REFRESH})
     private Set<Film> films = new HashSet<>();
-
 }

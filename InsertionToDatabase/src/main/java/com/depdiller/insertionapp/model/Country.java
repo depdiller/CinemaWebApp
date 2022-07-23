@@ -3,9 +3,11 @@ package com.depdiller.insertionapp.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.SQLInsert;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -18,14 +20,29 @@ import java.util.Set;
 public class Country {
     @Id
     private String countryName;
+
     public Country(String countryName) {
         this.countryName = countryName;
     }
 
-    @OneToMany(mappedBy = "countryname", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "country", orphanRemoval = true)
+    @Cascade({CascadeType.REFRESH})
     private Set<Place> places = new HashSet<>();
 
     @ManyToMany(mappedBy = "countries")
-    @Cascade({ org.hibernate.annotations.CascadeType.REFRESH, org.hibernate.annotations.CascadeType.MERGE, org.hibernate.annotations.CascadeType.PERSIST})
+    @Cascade({CascadeType.REFRESH})
     private Set<Film> films = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Country country = (Country) o;
+        return countryName.equals(country.countryName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(countryName);
+    }
 }

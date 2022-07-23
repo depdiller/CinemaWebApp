@@ -3,9 +3,10 @@ package com.depdiller.insertionapp.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -13,28 +14,40 @@ import java.util.Set;
 @Setter
 @Entity
 @NoArgsConstructor
+//@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"cityName", "countryName"})})
 public class Place {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "placeid", nullable = false)
-    private Long id;
-
-    @OneToMany(mappedBy = "birthPlace", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Person> people = new LinkedHashSet<>();
+    private Long placeId;
 
     public Place(City city, Country country) {
-        this.cityname = city;
-        this.countryname = country;
+        this.city = city;
+        this.country = country;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Cascade(org.hibernate.annotations.CascadeType.REFRESH)
-    @JoinColumn(name = "cityname")
-    private City cityname;
+    @OneToMany(mappedBy = "birthPlace")
+    private Set<Person> people = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Cascade(org.hibernate.annotations.CascadeType.REFRESH)
-    @JoinColumn(name = "countryname")
-    private Country countryname;
+    @JoinColumn(name = "cityName")
+    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+    private City city;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "countryName")
+    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+    private Country country;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Place place = (Place) o;
+        return city.equals(place.city) && country.equals(place.country);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(city, country);
+    }
 }

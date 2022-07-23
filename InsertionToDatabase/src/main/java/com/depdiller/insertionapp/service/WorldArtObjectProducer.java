@@ -111,7 +111,7 @@ public class WorldArtObjectProducer {
                 .map(array -> {
                     Website website = new Website(array[0]);
                     WebsiteLink websiteLink = new WebsiteLink();
-                    websiteLink.setWebsitename(website);
+                    websiteLink.setWebsite(website);
                     websiteLink.setLink(array[1]);
                     return websiteLink;
                 })
@@ -161,7 +161,7 @@ public class WorldArtObjectProducer {
                 .map(array -> {
                     Website website = new Website(array[0]);
                     WebsiteLink websiteLink = new WebsiteLink();
-                    websiteLink.setWebsitename(website);
+                    websiteLink.setWebsite(website);
                     websiteLink.setLink(array[1]);
                     return websiteLink;
                 })

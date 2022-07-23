@@ -22,15 +22,15 @@ public class WebsiteLink {
     private String link;
 
     @ManyToMany(mappedBy = "websiteLinks")
-    @Cascade({ CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+    @Cascade({CascadeType.REFRESH})
     private Set<Film> films = new HashSet<>();
 
     @ManyToMany(mappedBy = "websiteLinks")
-    @Cascade({ CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+    @Cascade({CascadeType.REFRESH})
     private Set<Person> people = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Cascade(CascadeType.REFRESH)
-    @JoinColumn(name = "websitename")
-    private Website websitename;
+    @JoinColumn(name = "websiteName")
+    private Website website;
 }
