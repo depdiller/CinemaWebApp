@@ -4,7 +4,7 @@
         <property name="connection.driver_class">org.postgresql.Driver</property>
         <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <property name="hbm2ddl.auto">update</property>
-        <property name="show_sql">true</property>
+        <property name="show_sql">false</property>
         <property name="format_sql">false</property>
         <property name="connection.pool_size">10</property>
         <mapping package="com.depdiller.insertionapp.model"/>
@@ -15,7 +15,6 @@
         <mapping class="com.depdiller.insertionapp.model.ParticipationValue"/>
         <mapping class="com.depdiller.insertionapp.model.PersonParticipationInFilm"/>
         <mapping class="com.depdiller.insertionapp.model.Person"/>
-        <mapping class="com.depdiller.insertionapp.model.Place"/>
         <mapping class="com.depdiller.insertionapp.model.Website"/>
         <mapping class="com.depdiller.insertionapp.model.WebsiteLink"/>
     </session-factory>

@@ -22,6 +22,8 @@ public class WorldArtObjectProducer {
     private static final DateTimeFormatter premierFormat = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     private static final DateTimeFormatter birthdateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final String genderPattern = "^\\b(мужской|женский)\\b.*";
+    private static final String splitByCommaOrSpaceRegex = "(\\s+|,\\s+)";
+    private static final String splitByCommaRegex = "(,\\s+)";
     private static final ThreadLocal<DecimalFormat> FORMAT_THREAD_LOCAL =
             new ThreadLocal<>() {
                 @Override
@@ -59,20 +61,20 @@ public class WorldArtObjectProducer {
         }
     }
 
-    public static Film filmMap(@NonNull Map<String, String> filmData, Map<String, String> links) {
+    public static Film filmMap(@NonNull Map<String, String> filmData, Set<WebsiteLink> links) {
         String name = filmData.get(WebsiteFilmTagNames.name.russianTag);
         String poster = filmData.get(WebsiteFilmTagNames.poster.russianTag);
 
         Set<Country> countries = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.countries.russianTag))
                 .map(str ->
-                        Stream.of(str.split("(\\s+|,\\s+)"))
+                        Stream.of(str.split(splitByCommaOrSpaceRegex))
                                 .map(Country::new)
                                 .collect(Collectors.toSet())
                 )
                 .orElse(null);
 
         Set<Genre> genres = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.genres.russianTag))
-                .map(str -> Stream.of(str.split("(\\s+|,\\s+)"))
+                .map(str -> Stream.of(str.split(splitByCommaOrSpaceRegex))
                         .map(Genre::new)
                         .collect(Collectors.toSet()))
                 .orElse(null);
@@ -103,20 +105,6 @@ public class WorldArtObjectProducer {
                 })
                 .orElse(null);
 
-        Set<WebsiteLink> linksToFilm = links.keySet().stream()
-                .filter(Objects::nonNull)
-                .map(website ->
-                        new String[]{website, links.get(website)}
-                )
-                .map(array -> {
-                    Website website = new Website(array[0]);
-                    WebsiteLink websiteLink = new WebsiteLink();
-                    websiteLink.setWebsite(website);
-                    websiteLink.setLink(array[1]);
-                    return websiteLink;
-                })
-                .collect(Collectors.toSet());
-
         return Film.builder()
                 .name(name)
                 .alternativeName(alternativeName)
@@ -126,12 +114,12 @@ public class WorldArtObjectProducer {
                 .countries(countries)
                 .moneyEarnedWorldWide(money)
                 .worldPremier(date)
-                .websiteLinks(linksToFilm)
+                .websiteLinks(links)
                 .personParticipationInFilms(new HashSet<>())
                 .build();
     }
 
-    public static Person personMap(Map<String, String> personData, Map<String, String> links) {
+    public static Person personMap(Map<String, String> personData, Set<WebsiteLink> links) {
         String name = personData.get(WebsitePersonTagNames.name.russianTag);
 
         LocalDate birthdate = RegexPatternMatcher
@@ -144,35 +132,24 @@ public class WorldArtObjectProducer {
                 .map(Gender::getGender)
                 .orElse(null);
 
-        Place birthPlace = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
-                .map(placeString -> placeString.split("(\\s+|,\\s+)"))
-                .map(array -> {
-                    City city = new City(array[0]);
-                    Country country = new Country(array[1]);
-                    return new Place(city, country);
-                })
-                .orElse(null);
-
-        Set<WebsiteLink> linksToPerson = links.keySet().stream()
-                .filter(Objects::nonNull)
-                .map(website ->
-                        new String[]{website, links.get(website)}
+        String[] cityCountryNames = Optional.ofNullable(personData.get(WebsitePersonTagNames.birthPlace.russianTag))
+                .map(placeString -> placeString.split(splitByCommaRegex))
+                .map(array ->
+                    new String[] {array[0], array[array.length - 1]}
                 )
-                .map(array -> {
-                    Website website = new Website(array[0]);
-                    WebsiteLink websiteLink = new WebsiteLink();
-                    websiteLink.setWebsite(website);
-                    websiteLink.setLink(array[1]);
-                    return websiteLink;
-                })
-                .collect(Collectors.toSet());
+                .orElse(null);
+        City city = Optional.ofNullable(cityCountryNames)
+                .map(array -> new City(array[0])).orElse(null);
+        Country country = Optional.ofNullable(cityCountryNames)
+                .map(array -> new Country(array[array.length - 1])).orElse(null);
 
         return Person.builder()
                 .name(name)
                 .birthdate(birthdate)
                 .gender(gender)
-                .birthPlace(birthPlace)
-                .websiteLinks(linksToPerson)
+                .birthCity(city)
+                .birthCountry(country)
+                .websiteLinks(links)
                 .personParticipationInFilms(new HashSet<>())
                 .build();
     }

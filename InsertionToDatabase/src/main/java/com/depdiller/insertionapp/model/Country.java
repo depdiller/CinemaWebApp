@@ -25,13 +25,13 @@ public class Country {
         this.countryName = countryName;
     }
 
-    @OneToMany(mappedBy = "country", orphanRemoval = true)
-    @Cascade({CascadeType.REFRESH})
-    private Set<Place> places = new HashSet<>();
-
     @ManyToMany(mappedBy = "countries")
     @Cascade({CascadeType.REFRESH})
     private Set<Film> films = new HashSet<>();
+
+    @OneToMany(mappedBy = "birthCountry")
+    @Cascade({CascadeType.REFRESH})
+    private Set<Person> people = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

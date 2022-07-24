@@ -6,6 +6,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -16,9 +17,6 @@ import java.util.Set;
 @Builder
 public class WebsiteLink {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long linkId;
-
     private String link;
 
     @ManyToMany(mappedBy = "websiteLinks")
@@ -33,4 +31,17 @@ public class WebsiteLink {
     @Cascade(CascadeType.REFRESH)
     @JoinColumn(name = "websiteName")
     private Website website;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WebsiteLink that = (WebsiteLink) o;
+        return link.equals(that.link);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(link);
+    }
 }

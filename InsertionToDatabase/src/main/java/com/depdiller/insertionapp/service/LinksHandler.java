@@ -1,16 +1,19 @@
 package com.depdiller.insertionapp.service;
 
+import com.depdiller.insertionapp.model.Website;
+import com.depdiller.insertionapp.model.WebsiteLink;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import lombok.NonNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class LinksHandler {
     private static final Set<String> websitesToSearchLinksFrom = Set.of("kinopoisk.ru",
             "imdb.com", "rottentomatoes.com", "metacritic.com");
 
-    public static Map<String, String> getLinks(@NonNull HtmlPage page) {
+    public static Set<WebsiteLink> getLinks(@NonNull HtmlPage page) {
         Map<String, String> resultLinks = new HashMap<>();
         websitesToSearchLinksFrom.stream()
                 .map(website -> {
@@ -26,6 +29,19 @@ public class LinksHandler {
                 })
                 .filter(array -> Objects.nonNull(array[1]))
                 .forEach(nameAndLink -> resultLinks.put(nameAndLink[0], nameAndLink[1]));
-        return resultLinks;
+
+        return resultLinks.keySet().stream()
+                .filter(Objects::nonNull)
+                .map(website ->
+                        new String[]{website, resultLinks.get(website)}
+                )
+                .map(array -> {
+                    Website website = new Website(array[0]);
+                    WebsiteLink websiteLink = new WebsiteLink();
+                    websiteLink.setWebsite(website);
+                    websiteLink.setLink(array[1]);
+                    return websiteLink;
+                })
+                .collect(Collectors.toSet());
     }
 }

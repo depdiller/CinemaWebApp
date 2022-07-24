@@ -27,9 +27,9 @@ public class City {
         this.cityName = cityName;
     }
 
-    @OneToMany(mappedBy = "city")
+    @OneToMany(mappedBy = "birthCity")
     @Cascade({CascadeType.REFRESH})
-    private Set<Place> places = new HashSet<>();
+    private Set<Person> people = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

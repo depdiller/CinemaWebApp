@@ -30,21 +30,21 @@ public class Film {
     private Integer durationMinutes;
 
     @ManyToMany
-    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "LinksToFilm",
             joinColumns = @JoinColumn(name = "filmId"),
-            inverseJoinColumns = @JoinColumn(name = "linkId"))
+            inverseJoinColumns = @JoinColumn(name = "link"))
+    @Cascade({CascadeType.REFRESH})
     private Set<WebsiteLink> websiteLinks = new HashSet<>();
 
     @ManyToMany
-    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+    @Cascade({CascadeType.REFRESH})
     @JoinTable(name = "FilmGenre",
             joinColumns = @JoinColumn(name = "filmId"),
             inverseJoinColumns = @JoinColumn(name = "genre"))
     private Set<Genre> genres = new HashSet<>();
 
     @ManyToMany
-    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+    @Cascade({CascadeType.REFRESH})
     @JoinTable(name = "FilmCountry",
             joinColumns = @JoinColumn(name = "filmId"),
             inverseJoinColumns = @JoinColumn(name = "countryName"))

@@ -37,7 +37,7 @@ public class PersonParticipationInFilm {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "partType")
-    @Cascade({CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.MERGE})
+    @Cascade({CascadeType.REFRESH})
     private ParticipationValue partType;
 
     @Override

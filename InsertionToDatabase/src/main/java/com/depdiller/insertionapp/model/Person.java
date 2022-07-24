@@ -30,30 +30,39 @@ public class Person {
     @ManyToMany
     @JoinTable(name = "LinksToPerson",
             joinColumns = @JoinColumn(name = "personId"),
-            inverseJoinColumns = @JoinColumn(name = "linkId"))
-    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
+            inverseJoinColumns = @JoinColumn(name = "link"))
+    @Cascade({CascadeType.REFRESH})
     private Set<WebsiteLink> websiteLinks = new HashSet<>();
-
 
     @OneToMany(mappedBy = "person")
     @Cascade({CascadeType.REFRESH})
     private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "birthplace")
-    @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
-    private Place birthPlace;
+    @JoinColumn(name = "birthCity")
+    @Cascade({CascadeType.REFRESH})
+    private City birthCity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "birthCountry")
+    @Cascade({CascadeType.REFRESH})
+    private Country birthCountry;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
-        return personId.equals(person.personId);
+        return Objects.equals(personId, person.personId) &&
+                name.equals(person.name) &&
+                Objects.equals(birthdate, person.birthdate) &&
+                gender == person.gender &&
+                Objects.equals(birthCity, person.birthCity) &&
+                Objects.equals(birthCountry, person.birthCountry);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(personId);
+        return Objects.hash(personId, name, birthdate, gender, birthCity, birthCountry);
     }
 }

@@ -14,16 +14,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FilmCastHandlerAsync {
     private static final String castTableDivsXpath = "/html/body/center/table[7]/tbody/tr/td/table/" +
             "tbody/tr/td[5]/table/tbody/tr/td/div";
     private static final String roleSubTablesXpath = "table[1]/tbody/tr/td/b";
-    private static final String peopleXpath = "table[3]/tbody/tr/td[2]/a[contains(@href, '../people.php')]";
     private static final Set<String> castRoles = Set.of("Режиссёры", "Сценаристы", "Актёры",
             "Продюсеры", "Операторы", "Композиторы");
     private static final Parser parser = WorldArtParser.getInstance();
+    private static final String keywordsCastRegex = "^.*\\b(режиссер фильма|актеры фильма|" +
+            "операторы фильма|продюсеры фильма|сценаристы фильма)\\b.*";
+    private static final String metaDescription = ".//meta[contains(@name, 'description')]";
+    private static final String peopleLinksByRolesXpath = ".//tr/td[2]/a[contains(@href, '../people.php')]";
+    private static final String linkToWorldArt = "http://www.world-art.ru";
     private static final Executor executor =
             Executors.newFixedThreadPool(10,
                     (Runnable r) -> {
@@ -34,15 +37,12 @@ public class FilmCastHandlerAsync {
             );
 
     public static Map<String, List<CompletableFuture<Person>>> parseFilmCastAsync(@NonNull HtmlPage filmCastPage) {
-        HtmlElement head = filmCastPage.getHead();
         HtmlMeta metaKeywords = filmCastPage
                 .getHead()
-                .getFirstByXPath(".//meta[contains(@name, 'description')]");
+                .getFirstByXPath(metaDescription);
         String keywords = metaKeywords.getContentAttribute();
-        String keywordsRegex = "^.*\\b(режиссер фильма|актеры фильма|" +
-                "операторы фильма|продюсеры фильма|сценаристы фильма)\\b.*";
 
-        if (!keywords.matches(keywordsRegex))
+        if (!keywords.matches(keywordsCastRegex))
             throw new IllegalArgumentException("Method can take only film cast pages");
 
         List<HtmlElement> tableDivs = filmCastPage
@@ -57,28 +57,23 @@ public class FilmCastHandlerAsync {
         for (String role : castRoles) {
             HtmlElement roleElement = filmCastData.get(role);
             List<HtmlAnchor> roleTableAnchors = roleElement
-                    .getByXPath(".//tr/td[2]/a[contains(@href, '../people.php')]");
-            List<CompletableFuture<Person>> futurePeople = FilmCastHandlerAsync.startParseByRoleAsync(roleTableAnchors);
+                    .getByXPath(peopleLinksByRolesXpath);
+            List<CompletableFuture<Person>> futurePeople = roleTableAnchors.stream()
+                    .limit(5)
+                    .map(anchor -> CompletableFuture.supplyAsync(() -> {
+                        try {
+                            String url = anchor.getHrefAttribute().replace("..", linkToWorldArt);
+                            Thread.sleep((long)(Math.random() * 5000));
+                            return ThreadSafeHtmlUnitConfig.getWebClient().<HtmlPage>getPage(url);
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                            throw new RuntimeException();
+                        }
+                    }, executor))
+                    .map(future -> future.thenApply(parser::personParse))
+                    .collect(Collectors.toList());
             rolesWithFuturePeople.put(role, futurePeople);
         }
         return rolesWithFuturePeople;
-    }
-
-    private static List<CompletableFuture<Person>> startParseByRoleAsync(List<HtmlAnchor> peopleRefsAnchors) {
-        List<CompletableFuture<Person>> futurePeople = peopleRefsAnchors.stream()
-                .limit(5)
-                .map(anchor -> CompletableFuture.supplyAsync(() -> {
-                    try {
-                        String url = anchor.getHrefAttribute().replace("..", "http://www.world-art.ru");
-                        HtmlPage page = ThreadSafeHtmlUnitConfig.getWebClient().getPage(url);
-//                        HtmlPage page = anchor.click();
-                        return page;
-                    } catch (IOException e) {
-                        throw new RuntimeException();
-                    }
-                }, executor))
-                .map(future -> future.thenApply(parser::personParse))
-                .collect(Collectors.toList());
-        return futurePeople;
     }
 }
