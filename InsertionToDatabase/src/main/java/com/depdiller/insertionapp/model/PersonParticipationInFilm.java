@@ -27,7 +27,7 @@ public class PersonParticipationInFilm {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personId")
-    @Cascade({CascadeType.REFRESH, CascadeType.PERSIST, CascadeType.MERGE})
+    @Cascade({CascadeType.REFRESH})
     private Person person;
 
     @ManyToOne(fetch = FetchType.LAZY)

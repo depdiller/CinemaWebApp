@@ -54,20 +54,6 @@ public class DatabaseInserter {
             participants.forEach(participant -> {
                 Person person = participant.getPerson();
 
-                Set<WebsiteLink> personWebsiteLinks = person.getWebsiteLinks();
-                if (personWebsiteLinks != null) {
-                    personWebsiteLinks.forEach(websiteLink -> {
-                        Website website = websiteLink.getWebsite();
-                        Website searchedWebsite = entityManager.find(Website.class, website.getWebsiteName());
-                        if (searchedWebsite == null)
-                            entityManager.persist(website);
-
-                        WebsiteLink searchedLink = entityManager.find(WebsiteLink.class, websiteLink.getLink());
-                        if (searchedLink == null)
-                            entityManager.persist(websiteLink);
-                    });
-                }
-
                 City city = person.getBirthCity();
                 if (city != null) {
                     City searchedCity = entityManager.find(City.class, city.getCityName());
@@ -86,6 +72,21 @@ public class DatabaseInserter {
                 if (searchedPartType == null) {
                     entityManager.persist(partType);
                 }
+
+                Set<WebsiteLink> personWebsiteLinks = person.getWebsiteLinks();
+                personWebsiteLinks.forEach(websiteLink -> {
+                    Website website = websiteLink.getWebsite();
+                    Website searchedWebsite = entityManager.find(Website.class, website.getWebsiteName());
+                    if (searchedWebsite == null)
+                        entityManager.persist(website);
+
+                    WebsiteLink searchedLink = entityManager.find(WebsiteLink.class, websiteLink.getLink());
+                    if (searchedLink == null) {
+                        entityManager.persist(websiteLink);
+                        entityManager.persist(person);
+                    }
+                    searchedLink.getPeople();
+                });
             });
             entityManager.persist(film);
 
