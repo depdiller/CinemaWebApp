@@ -15,7 +15,6 @@
         <mapping class="com.depdiller.insertionapp.model.ParticipationValue"/>
         <mapping class="com.depdiller.insertionapp.model.PersonParticipationInFilm"/>
         <mapping class="com.depdiller.insertionapp.model.Person"/>
-        <mapping class="com.depdiller.insertionapp.model.Website"/>
         <mapping class="com.depdiller.insertionapp.model.WebsiteLink"/>
     </session-factory>
 </hibernate-configuration>

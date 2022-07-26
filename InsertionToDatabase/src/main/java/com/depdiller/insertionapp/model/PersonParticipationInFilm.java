@@ -13,7 +13,6 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-//@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"partType", "personId", "filmId"})})
 public class PersonParticipationInFilm {
     public PersonParticipationInFilm(Person person, Film film, ParticipationValue partType) {
         this.partType = partType;
@@ -45,11 +44,11 @@ public class PersonParticipationInFilm {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PersonParticipationInFilm that = (PersonParticipationInFilm) o;
-        return person.equals(that.person) && film.equals(that.film) && partType.equals(that.partType);
+        return Objects.equals(partId, that.partId) && person.equals(that.person) && film.equals(that.film) && partType.equals(that.partType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(person, film, partType);
+        return Objects.hash(partId, person, film, partType);
     }
 }

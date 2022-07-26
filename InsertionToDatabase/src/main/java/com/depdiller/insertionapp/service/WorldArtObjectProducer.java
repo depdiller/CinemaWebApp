@@ -67,14 +67,14 @@ public class WorldArtObjectProducer {
 
         Set<Country> countries = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.countries.russianTag))
                 .map(str ->
-                        Stream.of(str.split(splitByCommaOrSpaceRegex))
+                        Stream.of(str.split(splitByCommaRegex))
                                 .map(Country::new)
                                 .collect(Collectors.toSet())
                 )
                 .orElse(null);
 
         Set<Genre> genres = Optional.ofNullable(filmData.get(WebsiteFilmTagNames.genres.russianTag))
-                .map(str -> Stream.of(str.split(splitByCommaOrSpaceRegex))
+                .map(str -> Stream.of(str.split(splitByCommaRegex))
                         .map(Genre::new)
                         .collect(Collectors.toSet()))
                 .orElse(null);
@@ -105,7 +105,8 @@ public class WorldArtObjectProducer {
                 })
                 .orElse(null);
 
-        return Film.builder()
+
+        Film film =  Film.builder()
                 .name(name)
                 .alternativeName(alternativeName)
                 .posterLink(poster)
@@ -114,9 +115,15 @@ public class WorldArtObjectProducer {
                 .countries(countries)
                 .moneyEarnedWorldWide(money)
                 .worldPremier(date)
-                .websiteLinks(links)
-                .personParticipationInFilms(new HashSet<>())
+                .personParticipationInFilms(new ArrayList<>())
                 .build();
+
+        links.forEach(link -> {
+            link.setFilm(film);
+        });
+
+        film.setWebsiteLinks(links);
+        return film;
     }
 
     public static Person personMap(Map<String, String> personData, Set<WebsiteLink> links) {
@@ -143,14 +150,17 @@ public class WorldArtObjectProducer {
         Country country = Optional.ofNullable(cityCountryNames)
                 .map(array -> new Country(array[array.length - 1])).orElse(null);
 
-        return Person.builder()
+        Person person = Person.builder()
                 .name(name)
                 .birthdate(birthdate)
                 .gender(gender)
                 .birthCity(city)
+                .personParticipationInFilms(new ArrayList<>())
                 .birthCountry(country)
-                .websiteLinks(links)
-                .personParticipationInFilms(new HashSet<>())
                 .build();
+
+        links.forEach(link -> link.setPerson(person));
+        person.setWebsiteLinks(links);
+        return person;
     }
 }

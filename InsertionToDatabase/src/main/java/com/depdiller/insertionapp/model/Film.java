@@ -7,9 +7,7 @@ import org.hibernate.annotations.CascadeType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Builder
 @AllArgsConstructor
@@ -29,12 +27,9 @@ public class Film {
     private BigDecimal moneyEarnedWorldWide;
     private Integer durationMinutes;
 
-    @ManyToMany
-    @JoinTable(name = "LinksToFilm",
-            joinColumns = @JoinColumn(name = "filmId"),
-            inverseJoinColumns = @JoinColumn(name = "link"))
+    @OneToMany(orphanRemoval = true, mappedBy = "link")
     @Cascade({CascadeType.REFRESH})
-    private Set<WebsiteLink> websiteLinks = new HashSet<>();
+    Set<WebsiteLink> websiteLinks;
 
     @ManyToMany
     @Cascade({CascadeType.REFRESH})
@@ -52,7 +47,7 @@ public class Film {
 
     @OneToMany(mappedBy = "partId", orphanRemoval = true)
     @Cascade({CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST})
-    private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
+    private List<PersonParticipationInFilm> personParticipationInFilms = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

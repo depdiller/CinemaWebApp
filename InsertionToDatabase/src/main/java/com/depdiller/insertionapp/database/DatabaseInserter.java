@@ -3,10 +3,13 @@ package com.depdiller.insertionapp.database;
 import com.depdiller.insertionapp.model.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @NoArgsConstructor
@@ -36,21 +39,7 @@ public class DatabaseInserter {
                 });
             }
 
-            Set<WebsiteLink> filmWebsiteLinks = film.getWebsiteLinks();
-            if (filmWebsiteLinks != null) {
-                filmWebsiteLinks.forEach(websiteLink -> {
-                    Website website = websiteLink.getWebsite();
-                    Website searchedWebsite = entityManager.find(Website.class, website.getWebsiteName());
-                    if (searchedWebsite == null)
-                        entityManager.persist(website);
-
-                    WebsiteLink searchedLink = entityManager.find(WebsiteLink.class, websiteLink.getLink());
-                    if (searchedLink == null)
-                        entityManager.persist(websiteLink);
-                });
-            }
-
-            Set<PersonParticipationInFilm> participants = film.getPersonParticipationInFilms();
+            List<PersonParticipationInFilm> participants = film.getPersonParticipationInFilms();
             participants.forEach(participant -> {
                 Person person = participant.getPerson();
 
@@ -74,19 +63,39 @@ public class DatabaseInserter {
                 }
 
                 Set<WebsiteLink> personWebsiteLinks = person.getWebsiteLinks();
-                personWebsiteLinks.forEach(websiteLink -> {
-                    Website website = websiteLink.getWebsite();
-                    Website searchedWebsite = entityManager.find(Website.class, website.getWebsiteName());
-                    if (searchedWebsite == null)
-                        entityManager.persist(website);
+                if (!personWebsiteLinks.isEmpty()) {
+                    personWebsiteLinks.forEach(websiteLink -> {
+                        WebsiteLink searchedLink = entityManager.find(WebsiteLink.class, websiteLink.getLink());
+                        if (searchedLink == null) {
+                            entityManager.persist(person);
+                            entityManager.persist(websiteLink);
+                        } else {
+                            Person foundPerson = searchedLink.getPerson();
+                            participant.setPerson(foundPerson);
+                        }
+                    });
+                }
+                else {
+                    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+                    CriteriaQuery<Person> cr = cb.createQuery(Person.class);
+                    Root<Person> root = cr.from(Person.class);
+                    cr.select(root).where(cb.equal(root.get("name"), person.getName()));
+                    Optional<Person> foundPerson = entityManager.createQuery(cr)
+                            .getResultStream()
+                            .findFirst();
 
-                    WebsiteLink searchedLink = entityManager.find(WebsiteLink.class, websiteLink.getLink());
-                    if (searchedLink == null) {
-                        entityManager.persist(websiteLink);
+                    if (foundPerson.isEmpty())
                         entityManager.persist(person);
-                    }
-                    searchedLink.getPeople();
-                });
+                    else
+                        participant.setPerson(foundPerson.get());
+                }
+            });
+
+            Set<WebsiteLink> filmWebsiteLinks = film.getWebsiteLinks();
+            filmWebsiteLinks.forEach(websiteLink -> {
+                WebsiteLink searchedLink = entityManager.find(WebsiteLink.class, websiteLink.getLink());
+                if (searchedLink == null)
+                    entityManager.persist(websiteLink);
             });
             entityManager.persist(film);
 

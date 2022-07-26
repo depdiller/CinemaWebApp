@@ -1,6 +1,5 @@
 package com.depdiller.insertionapp.service;
 
-import com.depdiller.insertionapp.model.Website;
 import com.depdiller.insertionapp.model.WebsiteLink;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -11,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class LinksHandler {
     private static final Set<String> websitesToSearchLinksFrom = Set.of("kinopoisk.ru",
-            "imdb.com", "rottentomatoes.com", "metacritic.com");
+            "imdb.com", "rottentomatoes.com", "metacritic.com", "wikipedia.org");
 
     public static Set<WebsiteLink> getLinks(@NonNull HtmlPage page) {
         Map<String, String> resultLinks = new HashMap<>();
@@ -36,11 +35,7 @@ public class LinksHandler {
                         new String[]{website, resultLinks.get(website)}
                 )
                 .map(array -> {
-                    Website website = new Website(array[0]);
-                    WebsiteLink websiteLink = new WebsiteLink();
-                    websiteLink.setWebsite(website);
-                    websiteLink.setLink(array[1]);
-                    return websiteLink;
+                    return new WebsiteLink(array[1]);
                 })
                 .collect(Collectors.toSet());
     }

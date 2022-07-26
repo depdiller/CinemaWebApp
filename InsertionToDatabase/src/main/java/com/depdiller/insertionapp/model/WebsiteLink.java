@@ -18,19 +18,23 @@ import java.util.Set;
 public class WebsiteLink {
     @Id
     private String link;
-
-    @ManyToMany(mappedBy = "websiteLinks")
-    @Cascade({CascadeType.REFRESH})
-    private Set<Film> films = new HashSet<>();
-
-    @ManyToMany(mappedBy = "websiteLinks")
-    @Cascade({CascadeType.REFRESH})
-    private Set<Person> people = new HashSet<>();
+    public WebsiteLink(String link) {
+        this.link = link;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Cascade(CascadeType.REFRESH)
-    @JoinColumn(name = "websiteName")
-    private Website website;
+    @JoinTable(name = "LinksToFilm",
+            joinColumns = {@JoinColumn(name = "link")},
+            inverseJoinColumns = {@JoinColumn(name = "filmId")})
+    @Cascade({CascadeType.REFRESH})
+    private Film film;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinTable(name = "LinksToPerson",
+            joinColumns = {@JoinColumn(name = "link")},
+            inverseJoinColumns = {@JoinColumn(name = "personId")})
+    @Cascade({CascadeType.REFRESH})
+    private Person person;
 
     @Override
     public boolean equals(Object o) {

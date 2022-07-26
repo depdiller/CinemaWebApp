@@ -6,9 +6,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Builder
 @AllArgsConstructor
@@ -27,16 +25,13 @@ public class Person {
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
-    @ManyToMany
-    @JoinTable(name = "LinksToPerson",
-            joinColumns = @JoinColumn(name = "personId"),
-            inverseJoinColumns = @JoinColumn(name = "link"))
+    @OneToMany(mappedBy = "link", orphanRemoval = true)
     @Cascade({CascadeType.REFRESH})
-    private Set<WebsiteLink> websiteLinks = new HashSet<>();
+    Set<WebsiteLink> websiteLinks;
 
     @OneToMany(mappedBy = "person")
     @Cascade({CascadeType.REFRESH})
-    private Set<PersonParticipationInFilm> personParticipationInFilms = new HashSet<>();
+    private List<PersonParticipationInFilm> personParticipationInFilms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "birthCity")
