@@ -43,17 +43,13 @@ public class Person {
     @Cascade({CascadeType.REFRESH})
     private Country birthCountry;
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
-        return Objects.equals(personId, person.personId) &&
-                name.equals(person.name) &&
-                Objects.equals(birthdate, person.birthdate) &&
-                gender == person.gender &&
-                Objects.equals(birthCity, person.birthCity) &&
-                Objects.equals(birthCountry, person.birthCountry);
+        return Objects.equals(personId, person.personId) && name.equals(person.name) && Objects.equals(birthdate, person.birthdate) && gender == person.gender && Objects.equals(birthCity, person.birthCity) && Objects.equals(birthCountry, person.birthCountry);
     }
 
     @Override

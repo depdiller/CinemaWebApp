@@ -71,26 +71,30 @@ public class WorldArtParser implements Parser {
         HtmlAnchor castListAnchor = filmPage
                 .getFirstByXPath(fullCastXpath);
         try {
-            HtmlPage castPage = castListAnchor.click();
-            Map<String, List<CompletableFuture<Person>>> rolesWithFuturePeople = FilmCastHandlerAsync
-                    .parseFilmCastAsync(castPage);
-            CompletableFuture[] result = rolesWithFuturePeople.keySet().stream()
-                    .map(role -> {
-                        var futurePeople = rolesWithFuturePeople.get(role);
-                        return futurePeople.stream()
-                                .peek(future -> future.thenAccept(person -> {
-                                    ParticipationValue partType = new ParticipationValue(role);
-                                    PersonParticipationInFilm participation = new PersonParticipationInFilm(
-                                            person, film, partType
-                                    );
-                                    person.getPersonParticipationInFilms().add(participation);
-                                    film.getPersonParticipationInFilms().add(participation);
-                                }))
-                                .toArray(CompletableFuture[]::new);
-                    })
-                    .map(CompletableFuture::allOf)
-                    .toArray(CompletableFuture[]::new);
-            CompletableFuture.allOf(result).join();
+            if (castListAnchor != null) {
+                HtmlPage castPage = castListAnchor.click();
+                Map<String, List<CompletableFuture<Person>>> rolesWithFuturePeople = FilmCastHandlerAsync
+                        .parseFilmCastAsync(castPage);
+                CompletableFuture[] result = rolesWithFuturePeople.keySet().stream()
+                        .map(role -> {
+                            var futurePeople = rolesWithFuturePeople.get(role);
+                            return futurePeople.stream()
+                                    .peek(future -> future.thenAccept(person -> {
+                                        ParticipationValue partType = new ParticipationValue(role);
+                                        PersonParticipationInFilm participation = new PersonParticipationInFilm(
+                                                person, film, partType
+                                        );
+                                        if (!person.getPersonParticipationInFilms().contains(participation))
+                                            person.getPersonParticipationInFilms().add(participation);
+                                        if (!film.getPersonParticipationInFilms().contains(participation))
+                                            film.getPersonParticipationInFilms().add(participation);
+                                    }))
+                                    .toArray(CompletableFuture[]::new);
+                        })
+                        .map(CompletableFuture::allOf)
+                        .toArray(CompletableFuture[]::new);
+                CompletableFuture.allOf(result).join();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

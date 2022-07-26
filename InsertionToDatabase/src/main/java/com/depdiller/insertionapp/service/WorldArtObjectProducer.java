@@ -9,6 +9,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,10 +84,15 @@ public class WorldArtObjectProducer {
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.alternativeName.russianTag), alternativeNamePattern)
                 .orElse(null);
 
-        LocalDate date = RegexPatternMatcher
-                .parseUsingPattern(filmData.get(WebsiteFilmTagNames.worldPremier.russianTag), worldPremierPattern)
-                .map(t -> LocalDate.parse(t, premierFormat))
-                .orElse(null);
+        LocalDate date = null;
+        try {
+            date = RegexPatternMatcher
+                    .parseUsingPattern(filmData.get(WebsiteFilmTagNames.worldPremier.russianTag), worldPremierPattern)
+                    .map(t -> LocalDate.parse(t, premierFormat))
+                    .orElse(null);
+        } catch (DateTimeParseException ex) {
+            ex.printStackTrace();
+        }
 
         Integer duration = RegexPatternMatcher
                 .parseUsingPattern(filmData.get(WebsiteFilmTagNames.duration.russianTag), durationPattern)
@@ -129,10 +135,15 @@ public class WorldArtObjectProducer {
     public static Person personMap(Map<String, String> personData, Set<WebsiteLink> links) {
         String name = personData.get(WebsitePersonTagNames.name.russianTag);
 
-        LocalDate birthdate = RegexPatternMatcher
-                .parseUsingPattern(personData.get(WebsitePersonTagNames.birthdate.russianTag), personBirthdatePattern)
-                .map(t -> LocalDate.parse(t, birthdateFormat))
-                .orElse(null);
+        LocalDate birthdate = null;
+        try {
+            birthdate = RegexPatternMatcher
+                    .parseUsingPattern(personData.get(WebsitePersonTagNames.birthdate.russianTag), personBirthdatePattern)
+                    .map(t -> LocalDate.parse(t, birthdateFormat))
+                    .orElse(null);
+        } catch (DateTimeParseException ex) {
+            ex.printStackTrace();
+        }
 
         Gender gender = RegexPatternMatcher
                 .parseUsingPattern(personData.get(WebsitePersonTagNames.gender.russianTag), genderPattern)

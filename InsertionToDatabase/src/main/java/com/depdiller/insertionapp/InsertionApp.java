@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class InsertionApp {
-    private static int numberOfFilmToBeginWith = 324;
+    private static int numberOfFilmToBeginWith = 720;
     private static final int filmsOnOnePage = 50;
     public static void main(String... args) throws IOException {
         int from = 1;

@@ -9,6 +9,7 @@ import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.SQLInsert;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -17,7 +18,6 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLInsert(sql = "insert into genre (genre) values (?) on conflict do nothing")
 public class Genre {
     @Id
     private String genre;
@@ -29,4 +29,17 @@ public class Genre {
     @ManyToMany(mappedBy = "genres")
     @Cascade({CascadeType.REFRESH})
     private Set<Film> films = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Genre genre1 = (Genre) o;
+        return genre.equals(genre1.genre);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genre);
+    }
 }
