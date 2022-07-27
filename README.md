@@ -61,5 +61,4 @@
 
 ##### Сущности в базе данных:
 
-![](./readme_photos/2022-03-04-23-19-35.png)
-
+![](./readme_photos/database.png)
